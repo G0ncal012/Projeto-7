@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.LightTransport;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -27,6 +28,8 @@ public class MapGenerator : MonoBehaviour
 
     public float islandFalloff = 2f;
 
+    public GameObject treePrefab;
+    public GameObject treePrefab2;
     public void GenerateMap()
     {
         float[,] noiseMap = Noise.GenerateNoiseMap(mapWidth, mapHeight, seed, noiseScale, octaves, persistance, lacunarity, offset);
@@ -91,6 +94,7 @@ public class MapGenerator : MonoBehaviour
                 SpawnPlayer(noiseMap);
                 SpawnWater();
                 SpawnMapBorder();
+                SpawnTrees(noiseMap);
             }
         }
     }
@@ -160,6 +164,59 @@ public class MapGenerator : MonoBehaviour
     Destroy(water.GetComponent<Collider>());
 }
 
+    void SpawnTrees(float[,] noiseMap)
+    {
+        GameObject existing = GameObject.Find("Trees");
+        if (existing != null) Destroy(existing);
+
+        if (treePrefab == null) return;
+
+        GameObject trees = new GameObject("Trees");
+        System.Random rng = new System.Random(seed);
+
+        for (int y = 0; y < mapHeight; y += 8)
+        {
+            for (int x = 0; x < mapWidth; x += 8)
+            {
+                float noiseValue = noiseMap[x, y];
+
+                // ✅ Variáveis declaradas fora dos ifs
+                float worldX = x - mapWidth / 2f;
+                float worldZ = -(y - mapHeight / 2f);
+                float offsetX = (float)(rng.NextDouble() - 0.5f) * 3f;
+                float offsetZ = (float)(rng.NextDouble() - 0.5f) * 3f;
+                float worldY = 0f;
+                if (Physics.Raycast(new Vector3(worldX + offsetX, 100f, worldZ + offsetZ), Vector3.down, out RaycastHit hit, 200f))
+                    worldY = hit.point.y;
+
+                Vector3 pos = new Vector3(worldX + offsetX, worldY, worldZ + offsetZ);
+
+                if (noiseValue > 0.45f && noiseValue <= 0.55f)
+                {
+                    if (rng.NextDouble() > 0.7f && treePrefab != null)
+                    {
+                        GameObject tree = GameObject.Instantiate(treePrefab, pos, Quaternion.identity);
+                        tree.transform.SetParent(trees.transform);
+                        tree.transform.rotation = Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f);
+                        float scale = (float)(rng.NextDouble() * 0.3f + 0.7f);
+                        tree.transform.localScale = Vector3.one * scale;
+                    }
+                }
+                else if (noiseValue > 0.45f && noiseValue <= 0.65f)
+                {
+                    if (rng.NextDouble() > 0.7f && treePrefab2 != null)
+                    {
+                        GameObject tree2 = GameObject.Instantiate(treePrefab2, pos, Quaternion.identity);
+                        tree2.transform.SetParent(trees.transform);
+                        tree2.transform.rotation = Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f);
+                        float scale2 = (float)(rng.NextDouble() * 0.3f + 0.7f);
+                        tree2.transform.localScale = Vector3.one * scale2;
+                    }
+                }
+            }
+        }
+    }
+
     void SpawnMapBorder()
     {
         GameObject existingBorder = GameObject.Find("MapBorder");
@@ -213,7 +270,7 @@ public class MapGenerator : MonoBehaviour
         new TerrainType { name = "Agua",       height = 0.4f,  colour = new Color(0.13f, 0.46f, 0.70f) },
         new TerrainType { name = "Areia",      height = 0.45f, colour = new Color(0.93f, 0.87f, 0.60f) },
         new TerrainType { name = "Erva",       height = 0.65f, colour = new Color(0.27f, 0.60f, 0.22f) },
-        new TerrainType { name = "Floresta",   height = 0.80f, colour = new Color(0.13f, 0.37f, 0.13f) },
+        new TerrainType { name = "Erva Densa",   height = 0.80f, colour = new Color(0.13f, 0.37f, 0.13f) },
         new TerrainType { name = "Rocha",      height = 1.00f, colour = new Color(0.50f, 0.45f, 0.40f) },
         };
 
