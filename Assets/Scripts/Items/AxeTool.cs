@@ -1,20 +1,12 @@
 using UnityEngine;
 
-/// <summary>
-/// Adiciona este script ao Player.
-/// Ativado/desativado pela HotbarUI com a tecla E.
-/// Com o machado ativo:
-///   - Aponta para uma parede/chão/árvore e clica botão esquerdo para destruir.
-///   - O raycast sai do centro da câmera (funciona com cursor bloqueado).
-///   - Objetos destruíveis precisam da tag "Buildables" (ou "Tree" para árvores — futuro).
-/// </summary>
 public class AxeTool : MonoBehaviour
 {
     [Header("Configurações")]
     [SerializeField] private float destroyRange = 5f;
     [SerializeField] private float hitCooldown = 0.35f;
     [SerializeField] private string buildablesTag = "Buildables";
-    [SerializeField] private string treeTag = "Tree"; // para o futuro
+    [SerializeField] private string treeTag = "Tree";
     [SerializeField] private LayerMask raycastMask = ~0;
     [SerializeField] private bool debugLogs = false;
     [SerializeField] private bool startActiveForTesting = false;
@@ -31,19 +23,15 @@ public class AxeTool : MonoBehaviour
     private bool treeTagValid = false;
     private BuildingManager buildingManager;
 
-    // Highlight state
     private GameObject lastHighlighted;
     private Material[] savedMaterials;
     private Renderer[] savedRenderers;
 
-    // ─────────────────────────────────────────────────────────────────────────
-
     private void Start()
     {
-        cam = FindFirstObjectByType<Camera>();
-        buildingManager = FindFirstObjectByType<BuildingManager>();
+        cam = FindAnyObjectByType<Camera>();
+        buildingManager = FindAnyObjectByType<BuildingManager>();
 
-        // Valida tags para não gerar UnityException quando não existem no TagManager
         buildablesTagValid = IsTagDefined(buildablesTag);
         treeTagValid = IsTagDefined(treeTag);
         if (debugLogs)
@@ -60,10 +48,9 @@ public class AxeTool : MonoBehaviour
 
     private void Update()
     {
-        if (cam == null) cam = FindFirstObjectByType<Camera>();
-        if (buildingManager == null) buildingManager = FindFirstObjectByType<BuildingManager>();
+        if (cam == null) cam = FindAnyObjectByType<Camera>();
+        if (buildingManager == null) buildingManager = FindAnyObjectByType<BuildingManager>();
 
-        // Se estás a usar o modo de teste, garante que fica ativo mesmo que alguma UI o desligue.
         if (startActiveForTesting && !isActive)
         {
             isActive = true;
@@ -76,7 +63,6 @@ public class AxeTool : MonoBehaviour
             return;
         }
 
-        // Segurança: se estiveres em modo de construção, não destruímos nada mesmo que o machado esteja ativo por engano.
         if (buildingManager != null && buildingManager.IsBuildModeActive())
         {
             ClearHighlight();
@@ -104,7 +90,6 @@ public class AxeTool : MonoBehaviour
                 Debug.Log($"[AxeTool] cam={(cam != null ? cam.name : "NULL")} range={destroyRange} mask={raycastMask.value}");
             }
 
-            // Recalcula com logs no clique
             target = GetTarget(debugLogs);
 
             if (debugLogs)
@@ -116,15 +101,12 @@ public class AxeTool : MonoBehaviour
         }
     }
 
-    // Chamado pela HotbarUI
     public void SetAxeActive(bool active)
     {
         isActive = active;
         if (debugLogs) Debug.Log($"[AxeTool] Active={isActive} (on {name})");
         if (!active) ClearHighlight();
     }
-
-    // ── Alvo ─────────────────────────────────────────────────────────────────
 
     private GameObject GetTarget(bool log)
     {
@@ -134,10 +116,8 @@ public class AxeTool : MonoBehaviour
             return null;
         }
 
-        // Raycast do CENTRO do ecrã — funciona mesmo com cursor bloqueado
         Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
-        // RaycastAll para evitar "bater" primeiro em triggers/Connectors/etc.
         RaycastHit[] hits = Physics.RaycastAll(
             ray,
             destroyRange,
@@ -177,7 +157,7 @@ public class AxeTool : MonoBehaviour
             if (candidate != null) return candidate;
         }
 
-        return null;        
+        return null;
     }
 
     private static GameObject FindTaggedInParents(Transform start, string tag)
@@ -205,7 +185,6 @@ public class AxeTool : MonoBehaviour
         }
         catch (System.Exception)
         {
-            // Tag não existe no projeto (ex: "Tree")
             return false;
         }
     }
@@ -215,7 +194,6 @@ public class AxeTool : MonoBehaviour
         if (string.IsNullOrEmpty(tag)) return false;
         try
         {
-            // Esta chamada lança exceção se a tag não existir.
             GameObject.FindGameObjectWithTag(tag);
             return true;
         }
@@ -225,15 +203,12 @@ public class AxeTool : MonoBehaviour
         }
     }
 
-    // ── Destruir ─────────────────────────────────────────────────────────────
-
     private void TryDestroy(GameObject target)
     {
         if (target == null) return;
 
         lastHitTime = Time.time;
 
-        // Atualiza conectores antes de destruir (para o sistema de building)
         foreach (Connector c in target.GetComponentsInChildren<Connector>())
             c.UpdateConnectors(false);
 
@@ -241,8 +216,6 @@ public class AxeTool : MonoBehaviour
         ClearHighlight();
         Destroy(target);
     }
-
-    // ── Highlight ────────────────────────────────────────────────────────────
 
     private void UpdateHighlight(GameObject target)
     {
@@ -252,8 +225,6 @@ public class AxeTool : MonoBehaviour
         if (target == null) return;
 
         lastHighlighted = target;
-
-        // Guarda os materiais originais e aplica cor de highlight
         savedRenderers = target.GetComponentsInChildren<Renderer>();
         savedMaterials = new Material[savedRenderers.Length];
 
@@ -261,7 +232,6 @@ public class AxeTool : MonoBehaviour
         {
             savedMaterials[i] = savedRenderers[i].material;
 
-            // Cria cópia do material com cor alterada
             Material m = new Material(savedRenderers[i].material);
             m.color = Color.Lerp(m.color, highlightColor, 0.55f);
             savedRenderers[i].material = m;
@@ -272,7 +242,6 @@ public class AxeTool : MonoBehaviour
     {
         if (lastHighlighted == null) return;
 
-        // Restaura materiais originais se o objeto ainda existir
         if (savedRenderers != null)
         {
             for (int i = 0; i < savedRenderers.Length; i++)
@@ -286,8 +255,6 @@ public class AxeTool : MonoBehaviour
         savedMaterials = null;
         savedRenderers = null;
     }
-
-    // ── Gizmo no editor ──────────────────────────────────────────────────────
 
     private void OnDrawGizmosSelected()
     {

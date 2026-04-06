@@ -30,6 +30,7 @@ public class MapGenerator : MonoBehaviour
     public GameObject treePrefab;
     public GameObject treePrefab2;
     public GameObject rocklee;
+
     public void GenerateMap()
     {
         float[,] noiseMap = Noise.GenerateNoiseMap(mapWidth, mapHeight, seed, noiseScale, octaves, persistance, lacunarity, offset);
@@ -54,7 +55,7 @@ public class MapGenerator : MonoBehaviour
                 }
             }
 
-        MapDisplay display = FindFirstObjectByType<MapDisplay>();
+        MapDisplay display = FindAnyObjectByType<MapDisplay>();
         if (drawMode == DrawMode.NoiseMap)
         {
             display.DrawTexture(TextureGenerator.TextureFromHeightMap(noiseMap));
@@ -72,14 +73,20 @@ public class MapGenerator : MonoBehaviour
 
             if (Application.isPlaying)
             {
-                Debug.Log("GenerateMap chamado! isPlaying=" + Application.isPlaying);
                 SpawnPlayer(noiseMap);
                 SpawnWater();
                 SpawnMapBorder();
-                SpawnTrees(noiseMap);
-                SpawnRocks(noiseMap);
+                StartCoroutine(SpawnAfterPhysics(noiseMap));
             }
         }
+    }
+
+    IEnumerator SpawnAfterPhysics(float[,] noiseMap)
+    {
+        yield return null;
+        yield return null;
+        SpawnTrees(noiseMap);
+        SpawnRocks(noiseMap);
     }
 
     float[,] GenerateIslandMask(int width, int height)
@@ -100,7 +107,6 @@ public class MapGenerator : MonoBehaviour
     {
         float centerHeight = heightCurve.Evaluate(noiseMap[mapWidth / 2, mapHeight / 2]) * heightMultiplier;
         Vector3 spawnPos = new Vector3(0f, centerHeight + 2f, 0f);
-        Debug.Log("SpawnPos = " + spawnPos);
 
         GameObject existing = GameObject.FindWithTag("Player");
         if (existing != null) DestroyImmediate(existing);
@@ -122,9 +128,6 @@ public class MapGenerator : MonoBehaviour
         rb.freezeRotation = true;
 
         player.AddComponent<PlayerController>();
-        // O player é criado em runtime, por isso as ferramentas também têm de ser adicionadas aqui.
-        // (Caso contrário, o "Player" que editas na cena não é o mesmo que existe durante o Play.)
-        player.AddComponent<AxeTool>();
     }
 
     void SpawnWater()
@@ -151,10 +154,9 @@ public class MapGenerator : MonoBehaviour
 
         if (treePrefab == null) return;
 
+        LayerMask terrainMask = LayerMask.GetMask("Terrain");
         GameObject trees = new GameObject("Trees");
         System.Random rng = new System.Random(seed);
-        LayerMask terrainMask = LayerMask.GetMask("Terrain");
-        Debug.Log("TerrainMask value: " + terrainMask.value);
 
         for (int y = 0; y < mapHeight; y += 8)
         {
@@ -178,9 +180,9 @@ public class MapGenerator : MonoBehaviour
 
                 Vector3 pos = new Vector3(worldX + offsetX, worldY, worldZ + offsetZ);
 
-                if (noiseValue > 0.45f && noiseValue <= 0.55f)
+                if (noiseValue > 0.40f && noiseValue <= 0.55f)
                 {
-                    if (rng.NextDouble() > 0.7f && treePrefab != null)
+                    if (rng.NextDouble() > 0.4f && treePrefab != null)
                     {
                         GameObject tree = GameObject.Instantiate(treePrefab, pos, Quaternion.identity);
                         tree.transform.SetParent(trees.transform);
@@ -189,9 +191,9 @@ public class MapGenerator : MonoBehaviour
                         tree.transform.localScale = Vector3.one * scale;
                     }
                 }
-                else if (noiseValue > 0.55f && noiseValue <= 0.65f)
+                else if (noiseValue > 0.55f && noiseValue <= 0.75f)
                 {
-                    if (rng.NextDouble() > 0.7f && treePrefab2 != null)
+                    if (rng.NextDouble() > 0.4f && treePrefab2 != null)
                     {
                         GameObject tree2 = GameObject.Instantiate(treePrefab2, pos, Quaternion.identity);
                         tree2.transform.SetParent(trees.transform);
@@ -264,59 +266,6 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    void SpawnTrees(float[,] noiseMap)
-    {
-        GameObject existing = GameObject.Find("Trees");
-        if (existing != null) Destroy(existing);
-
-        if (treePrefab == null) return;
-
-        GameObject trees = new GameObject("Trees");
-        System.Random rng = new System.Random(seed);
-
-        for (int y = 0; y < mapHeight; y += 8)
-        {
-            for (int x = 0; x < mapWidth; x += 8)
-            {
-                float noiseValue = noiseMap[x, y];
-
-                // ✅ Variáveis declaradas fora dos ifs
-                float worldX = x - mapWidth / 2f;
-                float worldZ = -(y - mapHeight / 2f);
-                float offsetX = (float)(rng.NextDouble() - 0.5f) * 3f;
-                float offsetZ = (float)(rng.NextDouble() - 0.5f) * 3f;
-                float worldY = 0f;
-                if (Physics.Raycast(new Vector3(worldX + offsetX, 100f, worldZ + offsetZ), Vector3.down, out RaycastHit hit, 200f))
-                    worldY = hit.point.y;
-
-                Vector3 pos = new Vector3(worldX + offsetX, worldY, worldZ + offsetZ);
-
-                if (noiseValue > 0.45f && noiseValue <= 0.55f)
-                {
-                    if (rng.NextDouble() > 0.7f && treePrefab != null)
-                    {
-                        GameObject tree = GameObject.Instantiate(treePrefab, pos, Quaternion.identity);
-                        tree.transform.SetParent(trees.transform);
-                        tree.transform.rotation = Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f);
-                        float scale = (float)(rng.NextDouble() * 0.3f + 0.7f);
-                        tree.transform.localScale = Vector3.one * scale;
-                    }
-                }
-                else if (noiseValue > 0.45f && noiseValue <= 0.65f)
-                {
-                    if (rng.NextDouble() > 0.7f && treePrefab2 != null)
-                    {
-                        GameObject tree2 = GameObject.Instantiate(treePrefab2, pos, Quaternion.identity);
-                        tree2.transform.SetParent(trees.transform);
-                        tree2.transform.rotation = Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f);
-                        float scale2 = (float)(rng.NextDouble() * 0.3f + 0.7f);
-                        tree2.transform.localScale = Vector3.one * scale2;
-                    }
-                }
-            }
-        }
-    }
-
     void SpawnMapBorder()
     {
         GameObject existingBorder = GameObject.Find("MapBorder");
@@ -347,7 +296,6 @@ public class MapGenerator : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("Start chamado!");
         mapWidth = 500;
         mapHeight = 500;
         noiseScale = 200f;
@@ -356,15 +304,6 @@ public class MapGenerator : MonoBehaviour
         lacunarity = 2f;
         heightMultiplier = 4f;
         islandFalloff = 2f;
-
-        heightCurve = new AnimationCurve(
-            new Keyframe(0f, 0f),
-            new Keyframe(0.39f, 0f),
-            new Keyframe(0.4f, 0f),
-            new Keyframe(0.45f, 0.1f),
-            new Keyframe(0.7f, 0.3f),
-            new Keyframe(1f, 0.5f)
-        );
 
         regions = new TerrainType[]
         {

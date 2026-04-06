@@ -944,6 +944,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 5
+  runSpeed: 10
   jumpForce: 4
   swimSpeed: 3
   floatForce: 8
@@ -1083,7 +1084,7 @@ GameObject:
   - component: {fileID: 2037311891}
   - component: {fileID: 2037311890}
   - component: {fileID: 2037311893}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1194,6 +1195,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2038726566}
   - component: {fileID: 2038726567}
+  - component: {fileID: 2038726568}
   m_Layer: 5
   m_Name: HotBarUI
   m_TagString: Untagged
@@ -1237,6 +1239,29 @@ MonoBehaviour:
   slotSize: 72
   slotSpacing: 6
   bottomPadding: 16
+--- !u!114 &2038726568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038726565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94f18485187580346bb54599b5eaa1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AxeTool
+  destroyRange: 5
+  hitCooldown: 0.35
+  buildablesTag: Buildables
+  treeTag: Tree
+  raycastMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  debugLogs: 0
+  startActiveForTesting: 0
+  destroyKey: 98
+  highlightColor: {r: 1, g: 0.25, b: 0.1, a: 0.7}
 --- !u!1 &2105843097
 GameObject:
   m_ObjectHideFlags: 0
@@ -1312,6 +1337,7 @@ MonoBehaviour:
   islandFalloff: 6
   treePrefab: {fileID: 186453603844502774, guid: 27e089f586a08d14e9351fae4a224e79, type: 3}
   treePrefab2: {fileID: 2099962177530847897, guid: 55bb48e029640684cb9dc9b62f06383b, type: 3}
+  rocklee: {fileID: 479361126166648049, guid: 53dac2d209696ca409a81de124115ee9, type: 3}
 --- !u!4 &2105843099
 Transform:
   m_ObjectHideFlags: 0
