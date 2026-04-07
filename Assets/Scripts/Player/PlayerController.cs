@@ -4,7 +4,6 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
     public float moveSpeed = 5f;
-    public float runSpeed = 10f;
     public float jumpForce = 4f;
 
     [Header("Swimming")]
@@ -30,7 +29,7 @@ public class PlayerController : MonoBehaviour
 
         GameObject camObj = new GameObject("PlayerCamera");
         camObj.transform.SetParent(transform);
-        camObj.transform.localPosition = new Vector3(0f, 2f, 0f);
+        camObj.transform.localPosition = new Vector3(0f, 0.6f, 0f);
         camObj.transform.localRotation = Quaternion.identity;
         cam = camObj.AddComponent<Camera>();
         camObj.AddComponent<AudioListener>();
@@ -70,11 +69,8 @@ public class PlayerController : MonoBehaviour
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
-        bool isRunning = Input.GetKey(KeyCode.LeftShift);
-        float currentSpeed = isRunning ? runSpeed : moveSpeed;
-
         Vector3 move = transform.right * x + transform.forward * z;
-        Vector3 newVelocity = move * currentSpeed;
+        Vector3 newVelocity = move * moveSpeed;
         newVelocity.y = rb.linearVelocity.y;
         rb.linearVelocity = newVelocity;
     }
