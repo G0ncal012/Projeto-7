@@ -30,6 +30,9 @@ public class MapGenerator : MonoBehaviour
     public GameObject treePrefab;
     public GameObject treePrefab2;
     public GameObject rocklee;
+    public GameObject galhoPrefab;
+    public GameObject pedrinhaPrefab;
+    public GameObject rockDropPrefab;
 
     public void GenerateMap()
     {
@@ -87,6 +90,7 @@ public class MapGenerator : MonoBehaviour
         yield return null;
         SpawnTrees(noiseMap);
         SpawnRocks(noiseMap);
+        SpawnGroundPickups(noiseMap);
     }
 
     float[,] GenerateIslandMask(int width, int height)
@@ -180,7 +184,7 @@ public class MapGenerator : MonoBehaviour
 
                 Vector3 pos = new Vector3(worldX + offsetX, worldY, worldZ + offsetZ);
 
-                if (noiseValue > 0.40f && noiseValue <= 0.55f)
+                if (noiseValue > 0.45f && noiseValue <= 0.55f)
                 {
                     if (rng.NextDouble() > 0.4f && treePrefab != null)
                     {
@@ -260,6 +264,68 @@ public class MapGenerator : MonoBehaviour
                             scale = (float)(rng.NextDouble() * 0.1f + 0.05f);
 
                         rock.transform.localScale = Vector3.one * scale;
+
+                        RockBreaking rockBreaking = rock.AddComponent<RockBreaking>();
+                        if (rockDropPrefab != null)
+                            rockBreaking.Setup(rockDropPrefab);
+                    }
+                }
+            }
+        }
+    }
+
+    void SpawnGroundPickups(float[,] noiseMap)
+    {
+        GameObject existing = GameObject.Find("GroundPickups");
+        if (existing != null) Destroy(existing);
+
+        GameObject container = new GameObject("GroundPickups");
+        System.Random rng = new System.Random(seed + 2);
+        LayerMask terrainMask = LayerMask.GetMask("Terrain");
+
+        for (int y = 0; y < mapHeight; y += 5)
+        {
+            for (int x = 0; x < mapWidth; x += 5)
+            {
+                float noiseValue = noiseMap[x, y];
+                float worldX = x - mapWidth / 2f;
+                float worldZ = -(y - mapHeight / 2f);
+
+                if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f)
+                    continue;
+
+                float offsetX = (float)(rng.NextDouble() - 0.5f) * 4f;
+                float offsetZ = (float)(rng.NextDouble() - 0.5f) * 4f;
+
+                if (!Physics.Raycast(new Vector3(worldX + offsetX, 100f, worldZ + offsetZ), Vector3.down, out RaycastHit hit, 200f, terrainMask))
+                    continue;
+
+                Vector3 pos = new Vector3(worldX + offsetX, hit.point.y + 0.05f, worldZ + offsetZ);
+
+                // Galhos — nas zonas de floresta (mesmo range das árvores)
+                if (galhoPrefab != null && noiseValue > 0.40f && noiseValue <= 0.75f)
+                {
+                    if (rng.NextDouble() > 0.75f)
+                    {
+                        GameObject galho = Instantiate(galhoPrefab, pos, Quaternion.Euler(90f, (float)(rng.NextDouble() * 360f), 0f));
+                        galho.transform.SetParent(container.transform);
+                        galho.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.05f + 0.05f);
+                    }
+                }
+
+                // Pedrinhas — nas zonas de rocha e erva densa
+                if (pedrinhaPrefab != null && noiseValue > 0.50f && noiseValue <= 0.85f)
+                {
+                    if (rng.NextDouble() > 0.80f)
+                    {
+                        Quaternion rot = Quaternion.Euler(
+                            (float)(rng.NextDouble() * 30f),
+                            (float)(rng.NextDouble() * 360f),
+                            (float)(rng.NextDouble() * 30f)
+                        );
+                        GameObject pedra = Instantiate(pedrinhaPrefab, pos, rot);
+                        pedra.transform.SetParent(container.transform);
+                        pedra.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.05f + 0.03f);
                     }
                 }
             }

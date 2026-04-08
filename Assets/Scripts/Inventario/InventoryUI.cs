@@ -32,7 +32,9 @@ public class InventoryUI : MonoBehaviour
     private Canvas canvas;
 
     private AxeTool axeTool;
+    private PickaxeTool pickaxeTool;
     private BuildingManager buildingManager;
+    private TextMeshProUGUI weightLabel;
 
     private class SlotUI
     {
@@ -49,6 +51,7 @@ public class InventoryUI : MonoBehaviour
         if (canvas == null) canvas = FindAnyObjectByType<Canvas>();
 
         axeTool = FindAnyObjectByType<AxeTool>();
+        pickaxeTool = FindAnyObjectByType<PickaxeTool>();
         buildingManager = FindAnyObjectByType<BuildingManager>();
 
         BuildHotbar();
@@ -71,6 +74,7 @@ public class InventoryUI : MonoBehaviour
     {
         // Refs podem aparecer depois (player gerado em runtime)
         if (axeTool == null) axeTool = FindAnyObjectByType<AxeTool>();
+        if (pickaxeTool == null) pickaxeTool = FindAnyObjectByType<PickaxeTool>();
         if (buildingManager == null) buildingManager = FindAnyObjectByType<BuildingManager>();
 
         // Abre/fecha inventário
@@ -138,6 +142,10 @@ public class InventoryUI : MonoBehaviour
         // Machado
         if (axeTool != null)
             axeTool.SetAxeActive(itemName == "Machado");
+
+        // Picareta
+        if (pickaxeTool != null)
+            pickaxeTool.SetPickaxeActive(itemName == "Picareta");
 
         // Construção
         if (buildingManager != null)
@@ -358,6 +366,21 @@ public class InventoryUI : MonoBehaviour
                 float y = cursorY - row * (SlotSize + SlotGap);
                 invSlots[idx] = CreateSlot(inventoryPanel.transform, x, y, false, idx);
             }
+
+        // Peso
+        GameObject weightGo = new GameObject("WeightLabel");
+        weightGo.transform.SetParent(inventoryPanel.transform, false);
+        RectTransform wrt = weightGo.AddComponent<RectTransform>();
+        wrt.anchorMin = new Vector2(0f, 0f);
+        wrt.anchorMax = new Vector2(1f, 0f);
+        wrt.pivot     = new Vector2(0.5f, 0f);
+        wrt.sizeDelta = new Vector2(0f, 24f);
+        wrt.anchoredPosition = new Vector2(0f, 10f);
+        weightLabel = weightGo.AddComponent<TextMeshProUGUI>();
+        weightLabel.fontSize  = 11f;
+        weightLabel.color     = Color.white;
+        weightLabel.alignment = TextAlignmentOptions.Center;
+        weightLabel.text      = $"0.0 / {InventorySystem.MaxWeight} kg";
     }
 
     // ── Refresh ───────────────────────────────────────────────────────────────
@@ -378,6 +401,15 @@ public class InventoryUI : MonoBehaviour
         if (!IsOpen) return;
         for (int i = 0; i < InventorySystem.InventorySlots; i++)
             UpdateSlot(invSlots[i], inv.inventory[i], false);
+
+        if (weightLabel != null)
+        {
+            float w = inv.GetTotalWeight();
+            weightLabel.text  = $"{w:F1} / {InventorySystem.MaxWeight} kg";
+            weightLabel.color = w >= InventorySystem.MaxWeight    ? Color.red :
+                                w >= InventorySystem.HeavyThreshold ? new Color(1f, 0.6f, 0f) :
+                                Color.white;
+        }
     }
 
     private void UpdateSlot(SlotUI slot, InventorySystem.ItemStack s, bool selected)

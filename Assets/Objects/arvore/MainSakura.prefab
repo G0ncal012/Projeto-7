@@ -389,8 +389,9 @@ MonoBehaviour:
   troncoFolhas: {fileID: 5078308724621218031}
   bottom: {fileID: 2294951786246053892}
   hitsToFall: 3
-  woodItemPrefab: {fileID: 7615290870414214718, guid: 82104ae744cffdf4ea19e25d04f36024, type: 3}
+  woodItemPrefab: {fileID: 6834688894542363201, guid: e59aee899301c8b4eac2756a40bb6cf5, type: 3}
   woodAmount: 3
+  woodScale: 0.1
   fallSpeed: 40
   destroyAfter: 30
 --- !u!1 &5078308724621218031

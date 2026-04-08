@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class InventorySystem : MonoBehaviour
 {
@@ -16,6 +17,33 @@ public class InventorySystem : MonoBehaviour
     public const int InventoryRows = 4;
     public const int InventoryCols = 6;
     public const int InventorySlots = InventoryRows * InventoryCols;
+
+    public const float MaxWeight = 50f;
+    public const float HeavyThreshold = 45f;
+
+    private static readonly Dictionary<string, float> itemWeights = new Dictionary<string, float>
+    {
+        { "Madeira",  0.2f },
+        { "Galho",    0.1f },
+        { "Pedra",    0.5f },
+        { "Machado",  3.5f },
+        { "Picareta", 5.0f },
+        { "Floor",    5.0f },
+        { "Wall",     5.0f },
+    };
+
+    public static float GetItemWeight(string name) =>
+        itemWeights.TryGetValue(name, out float w) ? w : 0f;
+
+    public float GetTotalWeight()
+    {
+        float total = 0f;
+        foreach (var s in hotbar)
+            if (s != null) total += GetItemWeight(s.itemName) * s.quantity;
+        foreach (var s in inventory)
+            if (s != null) total += GetItemWeight(s.itemName) * s.quantity;
+        return total;
+    }
 
     [System.NonSerialized] public ItemStack[] hotbar;
     [System.NonSerialized] public ItemStack[] inventory;
@@ -35,6 +63,13 @@ public class InventorySystem : MonoBehaviour
 
     public bool AddItem(string itemName, Sprite icon = null, int quantity = 1)
     {
+        float addedWeight = GetItemWeight(itemName) * quantity;
+        if (GetTotalWeight() + addedWeight > MaxWeight)
+        {
+            Debug.Log("[Inventory] Inventário demasiado pesado!");
+            return false;
+        }
+
         Debug.Log($"[Inventory] AddItem: {itemName} x{quantity} | InstanceID={GetInstanceID()}");
 
         if (TryStack(hotbar, itemName, quantity)) { NotifyChanged(); return true; }
