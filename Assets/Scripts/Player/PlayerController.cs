@@ -75,8 +75,20 @@ public class PlayerController : MonoBehaviour
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
-        bool isRunning = Input.GetKey(KeyCode.LeftShift);
-        float currentSpeed = isRunning ? runSpeed : moveSpeed;
+        float weight = InventorySystem.Instance != null ? InventorySystem.Instance.GetTotalWeight() : 0f;
+        bool isOverloaded = weight >= InventorySystem.MaxWeight;
+        bool isHeavy = weight >= InventorySystem.HeavyThreshold;
+
+        float currentSpeed;
+        if (isOverloaded)
+            currentSpeed = moveSpeed / 3f;
+        else if (isHeavy)
+            currentSpeed = moveSpeed / 1.5f;
+        else
+        {
+            bool isRunning = Input.GetKey(KeyCode.LeftShift);
+            currentSpeed = isRunning ? runSpeed : moveSpeed;
+        }
 
         Vector3 move = transform.right * x + transform.forward * z;
         Vector3 newVelocity = move * currentSpeed;
@@ -117,7 +129,9 @@ public class PlayerController : MonoBehaviour
     {
         bool isGrounded = Physics.Raycast(transform.position, Vector3.down, GetComponent<CapsuleCollider>().height * transform.localScale.y * 0.6f, ~LayerMask.GetMask("Player"));
 
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        float weight = InventorySystem.Instance != null ? InventorySystem.Instance.GetTotalWeight() : 0f;
+
+        if (weight < InventorySystem.HeavyThreshold && Input.GetButtonDown("Jump") && isGrounded)
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);

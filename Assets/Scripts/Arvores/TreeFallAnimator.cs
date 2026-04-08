@@ -12,6 +12,7 @@ public class TreeFallAnimator : MonoBehaviour
     private GameObject woodPrefab;
     private int woodAmount;
     private Vector3 woodSpawnPos;
+    private float woodScale = 0.1f;
 
     public void StartFall(Vector3 direction, float speed, float destroyAfter)
     {
@@ -24,11 +25,12 @@ public class TreeFallAnimator : MonoBehaviour
             Destroy(gameObject, destroyAfter);
     }
 
-    public void SetWoodDrop(GameObject prefab, int amount, Vector3 spawnPos)
+    public void SetWoodDrop(GameObject prefab, int amount, Vector3 spawnPos, float scale = 0.1f)
     {
         woodPrefab = prefab;
         woodAmount = amount;
         woodSpawnPos = spawnPos;
+        woodScale = scale;
     }
 
     void Update()
@@ -60,11 +62,14 @@ public class TreeFallAnimator : MonoBehaviour
         for (int i = 0; i < woodAmount; i++)
         {
             Vector3 offset = new Vector3(
-                Random.Range(-1.5f, 1.5f),
-                0.5f,
-                Random.Range(-1.5f, 1.5f)
+                Random.Range(-2f, 2f),
+                0.3f,
+                Random.Range(-2f, 2f)
             );
-            Instantiate(woodPrefab, woodSpawnPos + offset, Quaternion.identity);
+            // Deita a madeira no chão (X=90) com rotação aleatória
+            Quaternion rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
+            GameObject wood = Instantiate(woodPrefab, woodSpawnPos + offset, rotation);
+            wood.transform.localScale = Vector3.one * woodScale;
         }
     }
 }

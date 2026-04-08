@@ -17,6 +17,9 @@ public class TreeChopping : MonoBehaviour, IHitable
     [Tooltip("Quantos itens de madeira dropar")]
     [SerializeField] private int woodAmount = 3;
 
+    [Tooltip("Tamanho da madeira ao spawnar")]
+    [SerializeField] private float woodScale = 0.1f;
+
     [Tooltip("Velocidade de tombamento")]
     [SerializeField] private float fallSpeed = 40f;
 
@@ -70,7 +73,7 @@ public class TreeChopping : MonoBehaviour, IHitable
             animator.StartFall(fallDirection, fallSpeed, destroyAfter);
 
             if (woodItemPrefab != null)
-                animator.SetWoodDrop(woodItemPrefab, woodAmount, spawnPosition);
+                animator.SetWoodDrop(woodItemPrefab, woodAmount, spawnPosition, woodScale);
         }
 
         this.enabled = false;
