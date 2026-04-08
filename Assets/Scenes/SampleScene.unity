@@ -1119,15 +1119,12 @@ MonoBehaviour:
   buildablesTag: Buildables
   treeTag: Tree
   raycastMask:
+    serializedVersion: 2
     m_Bits: 4294967295
   debugLogs: 0
   startActiveForTesting: 0
   destroyKey: 98
-  highlightColor:
-    r: 1
-    g: 0.25
-    b: 0.1
-    a: 0.7
+  highlightColor: {r: 1, g: 0.25, b: 0.1, a: 0.7}
 --- !u!21 &1898436001
 Material:
   serializedVersion: 8
@@ -1468,7 +1465,7 @@ MonoBehaviour:
     colour: {r: 0.09972411, g: 0.7830189, b: 0.12256192, a: 0}
   islandFalloff: 6
   treePrefab: {fileID: 4296138808561451886, guid: ef21934d49f348c43a4e9997fe99ca79, type: 3}
-  treePrefab2: {fileID: 4296138808561451886, guid: ef21934d49f348c43a4e9997fe99ca79, type: 3}
+  treePrefab2: {fileID: 4296138808561451886, guid: 21ce755a340a8c140a1333abf1a28251, type: 3}
   rocklee: {fileID: 479361126166648049, guid: 53dac2d209696ca409a81de124115ee9, type: 3}
 --- !u!4 &2105843099
 Transform:
