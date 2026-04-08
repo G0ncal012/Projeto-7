@@ -1467,6 +1467,9 @@ MonoBehaviour:
   treePrefab: {fileID: 4296138808561451886, guid: ef21934d49f348c43a4e9997fe99ca79, type: 3}
   treePrefab2: {fileID: 4296138808561451886, guid: 21ce755a340a8c140a1333abf1a28251, type: 3}
   rocklee: {fileID: 479361126166648049, guid: 53dac2d209696ca409a81de124115ee9, type: 3}
+  galhoPrefab: {fileID: 1052644153003534430, guid: 9f90d11b2617cb94f96ea103a842ce11, type: 3}
+  pedrinhaPrefab: {fileID: 4050400208588649311, guid: 282deaf891e23474886204fdb9569683, type: 3}
+  rockDropPrefab: {fileID: 1727303851430380939, guid: 87bf93936ee6ccb43b44ebadefce6f65, type: 3}
 --- !u!4 &2105843099
 Transform:
   m_ObjectHideFlags: 0
