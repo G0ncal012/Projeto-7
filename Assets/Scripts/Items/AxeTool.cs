@@ -5,6 +5,7 @@ public class AxeTool : MonoBehaviour
     [Header("Configurações")]
     [SerializeField] private float destroyRange = 5f;
     [SerializeField] private float hitCooldown = 0.35f;
+    [SerializeField] private float damagePerHit = 34f;
     [SerializeField] private string buildablesTag = "Buildables";
     [SerializeField] private string treeTag = "Tree";
     [SerializeField] private LayerMask raycastMask = ~0;
@@ -118,7 +119,7 @@ public class AxeTool : MonoBehaviour
         if (hitable != null)
         {
             if (debugLogs) Debug.Log($"[AxeTool] IHitable encontrado em: {target.name}");
-            hitable.Execute();
+            hitable.TakeDamage(damagePerHit);
             return;
         }
 

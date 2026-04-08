@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Health))]
 public class TreeChopping : MonoBehaviour, IHitable
 {
     [Tooltip("Arrasta aqui o TroncoFolhas")]
@@ -7,9 +8,6 @@ public class TreeChopping : MonoBehaviour, IHitable
 
     [Tooltip("Arrasta aqui o Bottom (raiz que fica no chão)")]
     [SerializeField] private GameObject bottom;
-
-    [Tooltip("Quantos golpes para derrubar")]
-    [SerializeField] private int hitsToFall = 3;
 
     [Tooltip("Prefab do item de madeira que cai no chão")]
     [SerializeField] private GameObject woodItemPrefab;
@@ -26,22 +24,25 @@ public class TreeChopping : MonoBehaviour, IHitable
     [Tooltip("Segundos até desaparecer após cair (0 = nunca)")]
     [SerializeField] private float destroyAfter = 30f;
 
-    private int currentHits = 0;
+    private Health health;
     private bool hasFallen = false;
 
-    public void Execute()
+    void Awake()
+    {
+        health = GetComponent<Health>();
+        health.OnDeath += Fall;
+    }
+
+    public void TakeDamage(float damage)
     {
         if (hasFallen) return;
 
-        currentHits++;
-        Debug.Log($"[TreeChopping] Golpe {currentHits}/{hitsToFall}");
+        health.TakeDamage(damage);
+        Debug.Log($"[TreeChopping] Vida restante: {health.CurrentHP:F0}/{health.MaxHP:F0}");
 
         TreeShaker shaker = GetComponent<TreeShaker>();
         if (shaker == null) shaker = gameObject.AddComponent<TreeShaker>();
         shaker.Shake();
-
-        if (currentHits >= hitsToFall)
-            Fall();
     }
 
     private void Fall()
