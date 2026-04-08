@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Componente de vida reutilizável — usa em árvores, pedras, mobs e, mais tarde, no player.
+/// Componente de vida reutilizável — usado em árvores, pedras, mobs e no player.
 /// </summary>
 public class Health : MonoBehaviour
 {
