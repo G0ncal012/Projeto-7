@@ -2,5 +2,6 @@ using UnityEngine;
 
 public interface IHitable
 {
-    public void Execute();
+    /// <summary>Aplica dano ao objeto atingido.</summary>
+    void TakeDamage(float damage);
 }

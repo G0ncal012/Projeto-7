@@ -59,6 +59,8 @@ public class TreeFallAnimator : MonoBehaviour
     {
         if (woodPrefab == null) return;
 
+        Transform container = GetOrCreateContainer("--- Madeira ---");
+
         for (int i = 0; i < woodAmount; i++)
         {
             Vector3 offset = new Vector3(
@@ -66,10 +68,16 @@ public class TreeFallAnimator : MonoBehaviour
                 0.3f,
                 Random.Range(-2f, 2f)
             );
-            // Deita a madeira no chão (X=90) com rotação aleatória
             Quaternion rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
-            GameObject wood = Instantiate(woodPrefab, woodSpawnPos + offset, rotation);
+            GameObject wood = Instantiate(woodPrefab, woodSpawnPos + offset, rotation, container);
             wood.transform.localScale = Vector3.one * woodScale;
         }
+    }
+
+    private static Transform GetOrCreateContainer(string name)
+    {
+        GameObject existing = GameObject.Find(name);
+        if (existing != null) return existing.transform;
+        return new GameObject(name).transform;
     }
 }

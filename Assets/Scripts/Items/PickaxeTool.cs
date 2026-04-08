@@ -5,6 +5,7 @@ public class PickaxeTool : MonoBehaviour
     [Header("Configurações")]
     [SerializeField] private float range = 4f;
     [SerializeField] private float hitCooldown = 0.5f;
+    [SerializeField] private float damagePerHit = 25f;
     [SerializeField] private LayerMask raycastMask = ~0;
 
     [Header("Highlight")]
@@ -37,7 +38,8 @@ public class PickaxeTool : MonoBehaviour
             {
                 lastHitTime = Time.time;
                 ClearHighlight();
-                target.GetComponent<RockBreaking>()?.Execute();
+                IHitable hitable = target.GetComponentInParent<IHitable>();
+                hitable?.TakeDamage(damagePerHit);
             }
         }
     }

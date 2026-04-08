@@ -145,7 +145,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 368557355}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8d1b64837093fe849a7f34a320b1a279, type: 3}
   m_Name: 
@@ -193,6 +193,61 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &387291702
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 387291703}
+  - component: {fileID: 387291704}
+  m_Layer: 0
+  m_Name: DayNightCycle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &387291703
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 387291702}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.15884, y: 0.81119, z: 1.15884}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &387291704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 387291702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af39b3bf0f3e4a248b13983577065a59, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DayNightCycle
+  sunLight: {fileID: 1149851800}
+  dayDurationSeconds: 120
+  startTime: 0.35
+  nightStartTime: 0.75
+  nightEndTime: 0.25
+  dayAmbientColor: {r: 0.8, g: 0.8, b: 1, a: 1}
+  nightAmbientColor: {r: 0.05, g: 0.05, b: 0.15, a: 1}
+  daySunColor: {r: 1, g: 0.95, b: 0.8, a: 1}
+  nightSunColor: {r: 0.1, g: 0.1, b: 0.3, a: 1}
+  dayLightIntensity: 1
+  nightLightIntensity: 0
 --- !u!28 &558795219
 Texture2D:
   m_ObjectHideFlags: 0
@@ -485,8 +540,8 @@ Light:
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 1
-  m_Color: {r: 0.93710685, g: 0.9049082, b: 0.309422, a: 1}
-  m_Intensity: 1
+  m_Color: {r: 0.8145034, g: 0.7748087, b: 0.6969463, a: 1}
+  m_Intensity: 0.7938926
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -548,7 +603,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1149851798}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0.026932623, y: 0.9474375, z: -0.30784106, w: 0.0828901}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -739,6 +794,60 @@ MonoBehaviour:
   canConnectTo: 1
   canConnectToFloor: 1
   canConnectToWall: 1
+--- !u!1 &1521271356
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1521271358}
+  - component: {fileID: 1521271357}
+  m_Layer: 0
+  m_Name: NightMobSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1521271357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1521271356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8fc5c866fe1d4b967433aaeb455e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NightMobSpawner
+  mob1Prefabs:
+  - {fileID: 7482979095579705956, guid: 6401882816e59ca4e912d91db81e060a, type: 3}
+  mob2Prefabs:
+  - {fileID: 7482979095579705956, guid: 6401882816e59ca4e912d91db81e060a, type: 3}
+  maxMob1: 3
+  maxMob2: 4
+  spawnMinDistance: 15
+  spawnMaxDistance: 30
+  spawnCooldown: 8
+  debugLogs: 0
+--- !u!4 &1521271358
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1521271356}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.15884, y: 0.81119, z: 1.15884}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1525003075
 GameObject:
   m_ObjectHideFlags: 0
@@ -1008,7 +1117,6 @@ GameObject:
   - component: {fileID: 1820183327}
   - component: {fileID: 1820183326}
   - component: {fileID: 1820183325}
-  - component: {fileID: 1820183329}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -1025,9 +1133,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 1820183324}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cd461c41614e1834280a65130e6aa8eb, type: 3}
+  m_Script: {fileID: 11500000, guid: de6dfb7d33d89c24fa554e08096be46d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  moveSpeed: 5
+  runSpeed: 10
+  jumpForce: 4
+  swimSpeed: 3
+  floatForce: 8
+  waterDrag: 3
+  waterLevel: 0.15
+  mouseSensitivity: 2
 --- !u!54 &1820183326
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1094,18 +1210,6 @@ Transform:
   - {fileID: 984172106}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1820183329
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1820183324}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 94f18485187580346bb54599b5eaa1f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AxeTool
 --- !u!21 &1898436001
 Material:
   serializedVersion: 8
@@ -1305,7 +1409,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HotbarUI
   buildingManager: {fileID: 0}
-  axeTool: {fileID: 1820183329}
+  axeTool: {fileID: 0}
   slotSize: 72
   slotSpacing: 6
   bottomPadding: 16
@@ -1347,6 +1451,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AxeHit
   hitRange: 3
+  damagePerHit: 34
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -1364,8 +1469,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AxeTool
   destroyRange: 5
   hitCooldown: 0.35
+  damagePerHit: 34
   buildablesTag: Buildables
   treeTag: Tree
+  mobTag: Mob
   raycastMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -1387,6 +1494,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PickaxeTool
   range: 4
   hitCooldown: 0.5
+  damagePerHit: 25
   raycastMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -1512,3 +1620,5 @@ SceneRoots:
   - {fileID: 1525003078}
   - {fileID: 1321201452}
   - {fileID: 368557359}
+  - {fileID: 1521271358}
+  - {fileID: 387291703}
