@@ -77,6 +77,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e6953fe772367374996e4b968b7c4f34, type: 3}
       insertIndex: -1
       addedObject: {fileID: -1150018477354259711}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e6953fe772367374996e4b968b7c4f34, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1440970272148540369}
   m_SourcePrefab: {fileID: 100100000, guid: e6953fe772367374996e4b968b7c4f34, type: 3}
 --- !u!1 &479361126166648049 stripped
 GameObject:
@@ -106,3 +109,19 @@ CapsuleCollider:
   m_Height: 8
   m_Direction: 1
   m_Center: {x: -0.16119748, y: 0, z: 0}
+--- !u!114 &1440970272148540369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 479361126166648049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acc73917c663b5b4a9ad25279ed3f89f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RockBreaking
+  hitsToBreak: 4
+  dropPrefab: {fileID: 1727303851430380939, guid: 87bf93936ee6ccb43b44ebadefce6f65, type: 3}
+  dropAmount: 3
+  dropScale: 0.05
