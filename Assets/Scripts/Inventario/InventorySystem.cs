@@ -56,10 +56,16 @@ public class InventorySystem : MonoBehaviour
         Instance = this;
         hotbar = new ItemStack[HotbarSlots];
         inventory = new ItemStack[InventorySlots];
-        Debug.Log($"[Inventory] Awake — Instance ID={GetInstanceID()}");
     }
 
     public void NotifyChanged() => OnInventoryChanged?.Invoke();
+
+    public void ClearAll()
+    {
+        for (int i = 0; i < hotbar.Length; i++) hotbar[i] = null;
+        for (int i = 0; i < inventory.Length; i++) inventory[i] = null;
+        NotifyChanged();
+    }
 
     public bool AddItem(string itemName, Sprite icon = null, int quantity = 1)
     {
@@ -70,7 +76,6 @@ public class InventorySystem : MonoBehaviour
             return false;
         }
 
-        Debug.Log($"[Inventory] AddItem: {itemName} x{quantity} | InstanceID={GetInstanceID()}");
 
         if (TryStack(hotbar, itemName, quantity)) { NotifyChanged(); return true; }
         if (TryStack(inventory, itemName, quantity)) { NotifyChanged(); return true; }

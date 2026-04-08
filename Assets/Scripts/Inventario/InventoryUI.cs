@@ -398,6 +398,8 @@ public class InventoryUI : MonoBehaviour
             if (IsOpen) UpdateSlot(panelHotbarSlots[i], s, sel);
         }
 
+        UpdateEquippedItem();
+
         if (!IsOpen) return;
         for (int i = 0; i < InventorySystem.InventorySlots; i++)
             UpdateSlot(invSlots[i], inv.inventory[i], false);

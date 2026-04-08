@@ -119,6 +119,60 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &115956579
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 115956581}
+  - component: {fileID: 115956580}
+  m_Layer: 0
+  m_Name: DayAnimalSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &115956580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115956579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cd677eee55eee84c8435bcd681ab454, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DayAnimalSpawner
+  animalPrefabs:
+  - {fileID: 3928661417354363241, guid: 6dbb202767a616f4084f458b0e582192, type: 3}
+  maxAnimals: 5
+  spawnMinDistance: 15
+  spawnMaxDistance: 40
+  spawnCooldown: 10
+  debugLogs: 0
+  player: {fileID: 0}
+  lastSpawnTime: -999
+  animalContainer: {fileID: 0}
+--- !u!4 &115956581
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115956579}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.39356, y: 2.26421, z: 0.3084}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &368557355
 GameObject:
   m_ObjectHideFlags: 0
@@ -1117,6 +1171,8 @@ GameObject:
   - component: {fileID: 1820183327}
   - component: {fileID: 1820183326}
   - component: {fileID: 1820183325}
+  - component: {fileID: 1820183330}
+  - component: {fileID: 1820183329}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -1210,6 +1266,32 @@ Transform:
   - {fileID: 984172106}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1820183329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820183324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e89c94b8df586f34cac1f41dc1898c95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerRespawn
+  invincibilityDuration: 2
+--- !u!114 &1820183330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820183324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac30b26b8eec3074a9880ded8ed7cd43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHP: 100
 --- !u!21 &1898436001
 Material:
   serializedVersion: 8
@@ -1622,3 +1704,4 @@ SceneRoots:
   - {fileID: 368557359}
   - {fileID: 1521271358}
   - {fileID: 387291703}
+  - {fileID: 115956581}

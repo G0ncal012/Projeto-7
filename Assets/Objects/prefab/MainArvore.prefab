@@ -350,6 +350,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3518758062748015060}
   - component: {fileID: 4236476893954987607}
+  - component: {fileID: 927387997863301543}
   m_Layer: 0
   m_Name: MainArvore
   m_TagString: Tree
@@ -388,11 +389,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TreeChopping
   troncoFolhas: {fileID: 5078308724621218031}
   bottom: {fileID: 2294951786246053892}
-  hitsToFall: 3
   woodItemPrefab: {fileID: 6834688894542363201, guid: 0b82ded81ac10ec49b515113849aba5c, type: 3}
   woodAmount: 3
+  woodScale: 0.1
   fallSpeed: 40
   destroyAfter: 30
+--- !u!114 &927387997863301543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4296138808561451886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac30b26b8eec3074a9880ded8ed7cd43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHP: 100
 --- !u!1 &5078308724621218031
 GameObject:
   m_ObjectHideFlags: 0

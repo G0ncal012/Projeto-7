@@ -132,6 +132,10 @@ public class MapGenerator : MonoBehaviour
         rb.freezeRotation = true;
 
         player.AddComponent<PlayerController>();
+
+        Health health = player.AddComponent<Health>();
+        health.SetMaxHP(100f, refillHP: true);
+        player.AddComponent<PlayerRespawn>();
     }
 
     void SpawnWater()
