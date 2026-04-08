@@ -1028,14 +1028,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd461c41614e1834280a65130e6aa8eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  moveSpeed: 5
-  runSpeed: 10
-  jumpForce: 4
-  swimSpeed: 3
-  floatForce: 8
-  waterDrag: 3
-  waterLevel: 0.15
-  mouseSensitivity: 2
 --- !u!54 &1820183326
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1114,17 +1106,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94f18485187580346bb54599b5eaa1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AxeTool
-  destroyRange: 5
-  hitCooldown: 0.35
-  buildablesTag: Buildables
-  treeTag: Tree
-  raycastMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  debugLogs: 0
-  startActiveForTesting: 0
-  destroyKey: 98
-  highlightColor: {r: 1, g: 0.25, b: 0.1, a: 0.7}
 --- !u!21 &1898436001
 Material:
   serializedVersion: 8
@@ -1284,6 +1265,7 @@ GameObject:
   - component: {fileID: 2038726570}
   - component: {fileID: 2038726569}
   - component: {fileID: 2038726568}
+  - component: {fileID: 2038726572}
   m_Layer: 5
   m_Name: HotBarUI
   m_TagString: Untagged
@@ -1391,6 +1373,24 @@ MonoBehaviour:
   startActiveForTesting: 0
   destroyKey: 98
   highlightColor: {r: 1, g: 0.25, b: 0.1, a: 0.7}
+--- !u!114 &2038726572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038726565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93286f8927b028c4cb2e0513ad6fc547, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickaxeTool
+  range: 4
+  hitCooldown: 0.5
+  raycastMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  highlightColor: {r: 0.3, g: 0.6, b: 1, a: 0.7}
 --- !u!1 &2105843097
 GameObject:
   m_ObjectHideFlags: 0
@@ -1467,6 +1467,9 @@ MonoBehaviour:
   treePrefab: {fileID: 4296138808561451886, guid: ef21934d49f348c43a4e9997fe99ca79, type: 3}
   treePrefab2: {fileID: 4296138808561451886, guid: 21ce755a340a8c140a1333abf1a28251, type: 3}
   rocklee: {fileID: 479361126166648049, guid: 53dac2d209696ca409a81de124115ee9, type: 3}
+  galhoPrefab: {fileID: 1052644153003534430, guid: 9f90d11b2617cb94f96ea103a842ce11, type: 3}
+  pedrinhaPrefab: {fileID: 4050400208588649311, guid: 282deaf891e23474886204fdb9569683, type: 3}
+  rockDropPrefab: {fileID: 1727303851430380939, guid: 87bf93936ee6ccb43b44ebadefce6f65, type: 3}
 --- !u!4 &2105843099
 Transform:
   m_ObjectHideFlags: 0
