@@ -1,10 +1,8 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Health))]
 public class RockBreaking : MonoBehaviour, IHitable
 {
-    [Tooltip("Quantos golpes para partir")]
-    [SerializeField] private int hitsToBreak = 4;
-
     [Tooltip("Prefab do drop de pedras")]
     [SerializeField] private GameObject dropPrefab;
 
@@ -14,8 +12,14 @@ public class RockBreaking : MonoBehaviour, IHitable
     [Tooltip("Tamanho dos drops")]
     [SerializeField] private float dropScale = 0.05f;
 
-    private int currentHits = 0;
+    private Health health;
     private bool broken = false;
+
+    void Awake()
+    {
+        health = GetComponent<Health>();
+        health.OnDeath += Break;
+    }
 
     public void Setup(GameObject drop, int amount = 3, float scale = 0.05f)
     {
@@ -24,15 +28,12 @@ public class RockBreaking : MonoBehaviour, IHitable
         dropScale  = scale;
     }
 
-    public void Execute()
+    public void TakeDamage(float damage)
     {
         if (broken) return;
 
-        currentHits++;
-        Debug.Log($"[RockBreaking] Golpe {currentHits}/{hitsToBreak}");
-
-        if (currentHits >= hitsToBreak)
-            Break();
+        health.TakeDamage(damage);
+        Debug.Log($"[RockBreaking] Vida restante: {health.CurrentHP:F0}/{health.MaxHP:F0}");
     }
 
     private void Break()
