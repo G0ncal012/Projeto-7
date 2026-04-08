@@ -16,7 +16,7 @@ using UnityEngine;
 /// </summary>
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(Rigidbody))]
-public class MobAI : MonoBehaviour
+public class MobAI : MonoBehaviour, IHitable
 {
     // ── Configurações ─────────────────────────────────────────────────────────
     [Header("Movimento")]
@@ -151,6 +151,12 @@ public class MobAI : MonoBehaviour
                 TryAttack();
                 break;
         }
+    }
+
+    public void TakeDamage(float damage)
+    {
+        health.TakeDamage(damage);
+        Debug.Log($"[MobAI] {name} recebeu {damage} de dano. Vida: {health.CurrentHP:F0}/{health.MaxHP:F0}");
     }
 
     private void TryAttack()

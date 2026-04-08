@@ -8,6 +8,7 @@ public class AxeTool : MonoBehaviour
     [SerializeField] private float damagePerHit = 34f;
     [SerializeField] private string buildablesTag = "Buildables";
     [SerializeField] private string treeTag = "Tree";
+    [SerializeField] private string mobTag = "Mob";
     [SerializeField] private LayerMask raycastMask = ~0;
     [SerializeField] private bool debugLogs = false;
     [SerializeField] private bool startActiveForTesting = false;
@@ -22,6 +23,7 @@ public class AxeTool : MonoBehaviour
     private float nextHeartbeatLogTime = 0f;
     private bool buildablesTagValid = true;
     private bool treeTagValid = false;
+    private bool mobTagValid = false;
     private BuildingManager buildingManager;
 
     private GameObject lastHighlighted;
@@ -35,6 +37,7 @@ public class AxeTool : MonoBehaviour
 
         buildablesTagValid = IsTagDefined(buildablesTag);
         treeTagValid = IsTagDefined(treeTag);
+        mobTagValid = IsTagDefined(mobTag);
         if (debugLogs)
             Debug.Log($"[AxeTool] Tag valid? {buildablesTag}={buildablesTagValid}, {treeTag}={treeTagValid}");
 
@@ -176,6 +179,7 @@ public class AxeTool : MonoBehaviour
             GameObject candidate = null;
             if (buildablesTagValid) candidate = FindTaggedInParents(t, buildablesTag);
             if (candidate == null && treeTagValid) candidate = FindTaggedInParents(t, treeTag);
+            if (candidate == null && mobTagValid) candidate = FindTaggedInParents(t, mobTag);
 
             if (candidate != null) return candidate;
         }

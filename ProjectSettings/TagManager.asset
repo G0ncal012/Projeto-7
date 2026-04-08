@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Buildables
   - Tree
+  - Mob
   layers:
   - Default
   - TransparentFX

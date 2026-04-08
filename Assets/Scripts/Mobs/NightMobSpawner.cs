@@ -38,6 +38,7 @@ public class NightMobSpawner : MonoBehaviour
     // ── Estado interno ────────────────────────────────────────────────────────
     private Transform player;
     private float lastSpawnTime = -999f;
+    private Transform mobContainer;
 
     private readonly List<GameObject> activeMob1 = new List<GameObject>();
     private readonly List<GameObject> activeMob2 = new List<GameObject>();
@@ -50,10 +51,16 @@ public class NightMobSpawner : MonoBehaviour
             player = playerObj.transform;
         else
             Debug.LogWarning("[NightMobSpawner] Player não encontrado. Certifica-te que o Player tem a tag 'Player'.");
+
+        GameObject container = new GameObject("--- Mobs ---");
+        mobContainer = container.transform;
     }
 
     void Update()
     {
+        if (debugLogs)
+            Debug.Log($"[NightMobSpawner] IsNight={DayNightCycle.IsNight} player={player != null} time={Time.time:F1}");
+
         if (!DayNightCycle.IsNight)
         {
             // Se amanheceu, destrói todos os mobs ativos
@@ -61,7 +68,12 @@ public class NightMobSpawner : MonoBehaviour
             return;
         }
 
-        if (player == null) return;
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) player = playerObj.transform;
+            else return;
+        }
         if (Time.time < lastSpawnTime + spawnCooldown) return;
 
         // Limpeza de referências nulas (mobs mortos)
@@ -93,7 +105,7 @@ public class NightMobSpawner : MonoBehaviour
         GameObject prefab = prefabs[Random.Range(0, prefabs.Length)];
         if (prefab == null) return false;
 
-        GameObject mob = Instantiate(prefab, spawnPos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
+        GameObject mob = Instantiate(prefab, spawnPos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), mobContainer);
         activeList.Add(mob);
 
         if (debugLogs) Debug.Log($"[NightMobSpawner] Spawnou {mob.name} em {spawnPos}");

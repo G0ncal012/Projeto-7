@@ -42,6 +42,8 @@ public class RockBreaking : MonoBehaviour, IHitable
 
         if (dropPrefab != null)
         {
+            Transform container = GetOrCreateContainer("--- Pedras ---");
+
             for (int i = 0; i < dropAmount; i++)
             {
                 Vector3 offset = new Vector3(
@@ -54,11 +56,18 @@ public class RockBreaking : MonoBehaviour, IHitable
                     Random.Range(0f, 360f),
                     Random.Range(0f, 30f)
                 );
-                GameObject drop = Instantiate(dropPrefab, transform.position + offset, rot);
+                GameObject drop = Instantiate(dropPrefab, transform.position + offset, rot, container);
                 drop.transform.localScale = Vector3.one * dropScale;
             }
         }
 
         Destroy(gameObject);
+    }
+
+    private static Transform GetOrCreateContainer(string name)
+    {
+        GameObject existing = GameObject.Find(name);
+        if (existing != null) return existing.transform;
+        return new GameObject(name).transform;
     }
 }
