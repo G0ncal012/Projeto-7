@@ -124,6 +124,8 @@ public class NightMobSpawner : MonoBehaviour
             candidate.y = player.position.y + 50f;
             if (Physics.Raycast(candidate, Vector3.down, out RaycastHit hit, 200f, ~LayerMask.GetMask("Player")))
             {
+                if (hit.point.y < 0.5f) continue;
+                if (HitIsOnTaggedObject(hit, "Tree")) continue;
                 position = hit.point + Vector3.up * 0.1f;
                 return true;
             }
@@ -142,6 +144,17 @@ public class NightMobSpawner : MonoBehaviour
 
         activeMob1.Clear();
         activeMob2.Clear();
+    }
+
+    private static bool HitIsOnTaggedObject(RaycastHit hit, string tag)
+    {
+        Transform t = hit.collider.transform;
+        while (t != null)
+        {
+            if (t.CompareTag(tag)) return true;
+            t = t.parent;
+        }
+        return false;
     }
 
     // ── Gizmos ────────────────────────────────────────────────────────────────

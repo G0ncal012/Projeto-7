@@ -136,6 +136,7 @@ public class MapGenerator : MonoBehaviour
         Health health = player.AddComponent<Health>();
         health.SetMaxHP(100f, refillHP: true);
         player.AddComponent<PlayerRespawn>();
+        player.AddComponent<HungerSystem>();
     }
 
     void SpawnWater()

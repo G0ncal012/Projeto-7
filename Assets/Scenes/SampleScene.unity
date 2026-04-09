@@ -128,7 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 115956581}
-  - component: {fileID: 115956580}
+  - component: {fileID: 115956582}
   m_Layer: 0
   m_Name: DayAnimalSpawner
   m_TagString: Untagged
@@ -136,28 +136,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &115956580
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 115956579}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cd677eee55eee84c8435bcd681ab454, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DayAnimalSpawner
-  animalPrefabs:
-  - {fileID: 3928661417354363241, guid: 6dbb202767a616f4084f458b0e582192, type: 3}
-  maxAnimals: 5
-  spawnMinDistance: 15
-  spawnMaxDistance: 40
-  spawnCooldown: 10
-  debugLogs: 0
-  player: {fileID: 0}
-  lastSpawnTime: -999
-  animalContainer: {fileID: 0}
 --- !u!4 &115956581
 Transform:
   m_ObjectHideFlags: 0
@@ -173,6 +151,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &115956582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115956579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbe5e66dac2cc88419abb280056ac827, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DayAnimalSpawner
+  animalPrefabs:
+  - {fileID: 727572319945357450, guid: f32ef09c5e159db4a81c5f34a2835313, type: 3}
+  - {fileID: 8919220289442008482, guid: c2eb3a002a930f74d9d6aff6c0f14c20, type: 3}
+  - {fileID: 85446236567473154, guid: 65566ca9284c8564ba579749d264bbbd, type: 3}
+  maxAnimals: 5
+  spawnMinDistance: 15
+  spawnMaxDistance: 40
+  spawnCooldown: 10
+  minGroundHeight: 0.5
+  debugLogs: 0
 --- !u!1 &368557355
 GameObject:
   m_ObjectHideFlags: 0
@@ -1555,6 +1555,7 @@ MonoBehaviour:
   buildablesTag: Buildables
   treeTag: Tree
   mobTag: Mob
+  animalTag: Animal
   raycastMask:
     serializedVersion: 2
     m_Bits: 4294967295
