@@ -8,6 +8,8 @@ TagManager:
   - Tree
   - Mob
   - Animal
+  - Enemy
+  - Rock
   layers:
   - Default
   - TransparentFX

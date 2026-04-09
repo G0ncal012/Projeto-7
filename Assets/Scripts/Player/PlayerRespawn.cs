@@ -35,6 +35,7 @@ public class PlayerRespawn : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
         transform.position = spawnPoint;
         health.SetMaxHP(health.MaxHP, refillHP: true);
+        HungerSystem.Instance?.ResetHunger();
 
         isInvincible = true;
         Invoke(nameof(EndInvincibility), invincibilityDuration);
