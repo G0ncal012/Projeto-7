@@ -13,6 +13,7 @@ Jogo de sobrevivência desenvolvido em Unity.
 - Corte de árvores e quebra de pedras
 - Machado e picareta funcionais
 - Respawn do player (perde os itens ao morrer)
+- Spawn de Animais
 
 ---
 
