@@ -202,6 +202,11 @@ public class MobAI : MonoBehaviour, IHitable
     {
         state = State.Dead;
         rb.linearVelocity = Vector3.zero;
+        rb.isKinematic = true;
+
+        // Desativa todos os colliders para o corpo não interagir com o player
+        foreach (Collider col in GetComponentsInChildren<Collider>())
+            col.enabled = false;
 
         // Dropa itens
         foreach (var prefab in dropPrefabs)

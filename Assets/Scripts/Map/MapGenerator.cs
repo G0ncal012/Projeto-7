@@ -34,6 +34,10 @@ public class MapGenerator : MonoBehaviour
     public GameObject pedrinhaPrefab;
     public GameObject rockDropPrefab;
 
+    [Header("Vegetação LowPolyNature")]
+    public GameObject[] grassPrefabs;   // grass_1 a grass_5
+    public GameObject[] flowerPrefabs;  // flower_1 a flower_5
+
     public void GenerateMap()
     {
         float[,] noiseMap = Noise.GenerateNoiseMap(mapWidth, mapHeight, seed, noiseScale, octaves, persistance, lacunarity, offset);
@@ -91,6 +95,7 @@ public class MapGenerator : MonoBehaviour
         SpawnTrees(noiseMap);
         SpawnRocks(noiseMap);
         SpawnGroundPickups(noiseMap);
+        SpawnVegetation(noiseMap);
     }
 
     float[,] GenerateIslandMask(int width, int height)
@@ -332,6 +337,82 @@ public class MapGenerator : MonoBehaviour
                         pedra.transform.SetParent(container.transform);
                         pedra.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.05f + 0.03f);
                     }
+                }
+            }
+        }
+    }
+
+    void SpawnVegetation(float[,] noiseMap)
+    {
+        GameObject existing = GameObject.Find("Vegetation");
+        if (existing != null) Destroy(existing);
+
+        GameObject container = new GameObject("Vegetation");
+        System.Random rng = new System.Random(seed + 3);
+        LayerMask terrainMask = LayerMask.GetMask("Terrain");
+
+        // Grass: cobre toda a zona verde (Erva + Erva Densa) — noise 0.45 a 0.80
+        if (grassPrefabs != null && grassPrefabs.Length > 0)
+        {
+            for (int y = 0; y < mapHeight; y += 2)
+            {
+                for (int x = 0; x < mapWidth; x += 2)
+                {
+                    float noiseValue = noiseMap[x, y];
+                    if (noiseValue <= 0.45f || noiseValue > 0.80f) continue;
+                    if (rng.NextDouble() > 0.80f) continue;
+
+                    float worldX = x - mapWidth / 2f;
+                    float worldZ = -(y - mapHeight / 2f);
+                    if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f) continue;
+
+                    float offsetX = (float)(rng.NextDouble() - 0.5f) * 1.5f;
+                    float offsetZ = (float)(rng.NextDouble() - 0.5f) * 1.5f;
+                    if (!Physics.Raycast(new Vector3(worldX + offsetX, 100f, worldZ + offsetZ), Vector3.down, out RaycastHit hit, 200f, terrainMask)) continue;
+
+                    Vector3 pos = new Vector3(worldX + offsetX, hit.point.y + 0.02f, worldZ + offsetZ);
+                    GameObject prefab = grassPrefabs[rng.Next(grassPrefabs.Length)];
+                    if (prefab == null) continue;
+
+                    GameObject grass = Instantiate(prefab, pos, Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f));
+                    grass.transform.SetParent(container.transform);
+                    grass.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.4f + 0.6f);
+                    foreach (Collider c in grass.GetComponentsInChildren<Collider>()) Destroy(c);
+                }
+            }
+        }
+
+        // Flowers: apenas na borda da areia junto à água — noise 0.41 a 0.50
+        // e só acima do nível da água (y > 0.15f) para não dar spawn dentro da água
+        if (flowerPrefabs != null && flowerPrefabs.Length > 0)
+        {
+            for (int y = 0; y < mapHeight; y += 3)
+            {
+                for (int x = 0; x < mapWidth; x += 3)
+                {
+                    float noiseValue = noiseMap[x, y];
+                    if (noiseValue <= 0.41f || noiseValue > 0.50f) continue;
+                    if (rng.NextDouble() > 0.55f) continue;
+
+                    float worldX = x - mapWidth / 2f;
+                    float worldZ = -(y - mapHeight / 2f);
+                    if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f) continue;
+
+                    float offsetX = (float)(rng.NextDouble() - 0.5f) * 1.5f;
+                    float offsetZ = (float)(rng.NextDouble() - 0.5f) * 1.5f;
+                    if (!Physics.Raycast(new Vector3(worldX + offsetX, 100f, worldZ + offsetZ), Vector3.down, out RaycastHit hit, 200f, terrainMask)) continue;
+
+                    // Garante que está acima do nível da água
+                    if (hit.point.y < 0.2f) continue;
+
+                    Vector3 pos = new Vector3(worldX + offsetX, hit.point.y + 0.02f, worldZ + offsetZ);
+                    GameObject prefab = flowerPrefabs[rng.Next(flowerPrefabs.Length)];
+                    if (prefab == null) continue;
+
+                    GameObject flower = Instantiate(prefab, pos, Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f));
+                    flower.transform.SetParent(container.transform);
+                    flower.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.3f + 0.7f);
+                    foreach (Collider c in flower.GetComponentsInChildren<Collider>()) Destroy(c);
                 }
             }
         }
