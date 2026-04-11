@@ -6,6 +6,7 @@ Jogo de sobrevivência desenvolvido em Unity.
 
 - Geração de mapa procedural
 - Sistema de dia/noite
+- Relva adicionado (falta meter os cogumelos)
 - Sistema de HP (player, árvores, pedras, mobs)
 - IA de mobs noturnos (spawn/despawn automático)
 - Inventário, crafting e hotbar
@@ -13,7 +14,7 @@ Jogo de sobrevivência desenvolvido em Unity.
 - Corte de árvores e quebra de pedras
 - Machado e picareta funcionais
 - Respawn do player (perde os itens ao morrer)
-- Spawn de Animais
+- Spawn de Animais (falta os drops)
 
 ---
 
