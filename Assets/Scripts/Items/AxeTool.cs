@@ -185,6 +185,14 @@ public class AxeTool : MonoBehaviour
             if (candidate == null && mobTagValid) candidate = FindTaggedInParents(t, mobTag);
             if (candidate == null && animalTagValid) candidate = FindTaggedInParents(t, animalTag);
 
+            // Fallback: qualquer objeto com IHitable independentemente da tag
+            if (candidate == null)
+            {
+                IHitable hitable = hits[i].collider.GetComponentInParent<IHitable>();
+                if (hitable == null) hitable = hits[i].collider.GetComponentInChildren<IHitable>();
+                if (hitable != null) candidate = (hitable as MonoBehaviour)?.gameObject;
+            }
+
             if (candidate != null) return candidate;
         }
 

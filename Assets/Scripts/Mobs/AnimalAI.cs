@@ -233,9 +233,15 @@ public class AnimalAI : MonoBehaviour, IHitable
         rb.linearVelocity = Vector3.zero;
         rb.isKinematic = true;
 
+        foreach (Collider col in GetComponentsInChildren<Collider>())
+            col.enabled = false;
+
         SetAnimSpeed(0f);
         if (animator != null)
+        {
+            animator.ResetTrigger(animAttack); // limpa trigger de ataque pendente
             animator.SetTrigger(animDeath);
+        }
 
         if (foodDropPrefab != null)
         {

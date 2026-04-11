@@ -1661,6 +1661,21 @@ MonoBehaviour:
   galhoPrefab: {fileID: 1052644153003534430, guid: 9f90d11b2617cb94f96ea103a842ce11, type: 3}
   pedrinhaPrefab: {fileID: 4050400208588649311, guid: 282deaf891e23474886204fdb9569683, type: 3}
   rockDropPrefab: {fileID: 1727303851430380939, guid: 87bf93936ee6ccb43b44ebadefce6f65, type: 3}
+  grassPrefabs:
+  - {fileID: 2729067269906715732, guid: e12374fd3dfc40c4c91b2a60a5283ab9, type: 3}
+  - {fileID: 4998394222847482029, guid: 0165bfc5d354c874c8dadaa6f4b4cce6, type: 3}
+  - {fileID: 6600337205455546939, guid: 50d2489154b4ba04a910c1bcc140050b, type: 3}
+  - {fileID: 7153516239515084352, guid: 6733f88b0413b8144bb902b4d5382da0, type: 3}
+  - {fileID: 7123522699319063770, guid: d98dc99d981a3b54da925fd80443ff97, type: 3}
+  - {fileID: 2625355438413263625, guid: a2e237eb5c72d704f9fa592332351b4b, type: 3}
+  - {fileID: 8200902086188934034, guid: 154d97c16cc92c749977e01bdc4bd834, type: 3}
+  - {fileID: 2041795625905659808, guid: 3ca38a4d9861d664da0c8b85b9312523, type: 3}
+  flowerPrefabs:
+  - {fileID: 3890342601400112563, guid: 1307d5db3b3b1d746bf476c9ca6a8ada, type: 3}
+  - {fileID: 7487942896159154854, guid: 4df24f140fea628408efa47138d07550, type: 3}
+  - {fileID: 600573730427011581, guid: 0f35d375925438e428698cd74825e7d0, type: 3}
+  - {fileID: 190139569583134520, guid: ac70161bd66598043b900c31738f32e8, type: 3}
+  - {fileID: 6803290075799680600, guid: f9ae9113883876343bdebec07be281f1, type: 3}
 --- !u!4 &2105843099
 Transform:
   m_ObjectHideFlags: 0
