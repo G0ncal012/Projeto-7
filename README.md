@@ -4,7 +4,7 @@ Jogo de sobrevivência desenvolvido em Unity.
 
 ## Estado atual do projeto
 
-- Geração de mapa procedural
+- Geração de mapa procedural ( Resolver proba da hitbox das arvores)
 - Sistema de dia/noite
 - Relva adicionado (falta meter os cogumelos)
 - Sistema de HP (player, árvores, pedras, mobs)
