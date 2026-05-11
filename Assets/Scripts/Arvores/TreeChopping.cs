@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Health))]
 public class TreeChopping : MonoBehaviour, IHitable
 {
     [Tooltip("Arrasta aqui o TroncoFolhas")]
@@ -8,14 +9,14 @@ public class TreeChopping : MonoBehaviour, IHitable
     [Tooltip("Arrasta aqui o Bottom (raiz que fica no chão)")]
     [SerializeField] private GameObject bottom;
 
-    [Tooltip("Quantos golpes para derrubar")]
-    [SerializeField] private int hitsToFall = 3;
-
     [Tooltip("Prefab do item de madeira que cai no chão")]
     [SerializeField] private GameObject woodItemPrefab;
 
     [Tooltip("Quantos itens de madeira dropar")]
     [SerializeField] private int woodAmount = 3;
+
+    [Tooltip("Tamanho da madeira ao spawnar")]
+    [SerializeField] private float woodScale = 0.1f;
 
     [Tooltip("Velocidade de tombamento")]
     [SerializeField] private float fallSpeed = 40f;
@@ -23,22 +24,25 @@ public class TreeChopping : MonoBehaviour, IHitable
     [Tooltip("Segundos até desaparecer após cair (0 = nunca)")]
     [SerializeField] private float destroyAfter = 30f;
 
-    private int currentHits = 0;
+    private Health health;
     private bool hasFallen = false;
 
-    public void Execute()
+    void Awake()
+    {
+        health = GetComponent<Health>();
+        health.OnDeath += Fall;
+    }
+
+    public void TakeDamage(float damage)
     {
         if (hasFallen) return;
 
-        currentHits++;
-        Debug.Log($"[TreeChopping] Golpe {currentHits}/{hitsToFall}");
+        health.TakeDamage(damage);
+        Debug.Log($"[TreeChopping] Vida restante: {health.CurrentHP:F0}/{health.MaxHP:F0}");
 
         TreeShaker shaker = GetComponent<TreeShaker>();
         if (shaker == null) shaker = gameObject.AddComponent<TreeShaker>();
         shaker.Shake();
-
-        if (currentHits >= hitsToFall)
-            Fall();
     }
 
     private void Fall()
@@ -70,7 +74,7 @@ public class TreeChopping : MonoBehaviour, IHitable
             animator.StartFall(fallDirection, fallSpeed, destroyAfter);
 
             if (woodItemPrefab != null)
-                animator.SetWoodDrop(woodItemPrefab, woodAmount, spawnPosition);
+                animator.SetWoodDrop(woodItemPrefab, woodAmount, spawnPosition, woodScale);
         }
 
         this.enabled = false;

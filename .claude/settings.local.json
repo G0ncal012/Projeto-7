@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"c:/Users/diogo.batista/Documents/ProjetoMain\" show HEAD:Assets/Scenes/SampleScene.unity)"
+    ]
+  }
+}

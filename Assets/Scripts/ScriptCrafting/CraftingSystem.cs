@@ -16,13 +16,10 @@ public class CraftingSystem : MonoBehaviour
 
     public bool CanCraft(CraftingRecipes.Recipe recipe)
     {
-        if (InventorySystem.Instance == null) { Debug.Log("[Craft] InventorySystem NULL"); return false; }
-        Debug.Log($"[Craft] CanCraft — InventorySystem InstanceID={InventorySystem.Instance.GetInstanceID()}");
+        if (InventorySystem.Instance == null) return false;
         foreach (var ing in recipe.ingredients)
         {
-            int count = CountItem(ing.itemName);
-            Debug.Log($"[Craft] {ing.itemName}: tenho={count} preciso={ing.quantity}");
-            if (count < ing.quantity) return false;
+            if (CountItem(ing.itemName) < ing.quantity) return false;
         }
         return true;
     }
@@ -41,15 +38,11 @@ public class CraftingSystem : MonoBehaviour
     private int CountItem(string itemName)
     {
         var inv = InventorySystem.Instance;
-        Debug.Log($"[Craft] CountItem({itemName}) — InventorySystem InstanceID={inv.GetInstanceID()}");
-
         int count = 0;
         foreach (var s in inv.hotbar)
             if (s != null && s.itemName == itemName) count += s.quantity;
         foreach (var s in inv.inventory)
             if (s != null && s.itemName == itemName) count += s.quantity;
-
-        Debug.Log($"[Craft] CountItem({itemName}) = {count}");
         return count;
     }
 

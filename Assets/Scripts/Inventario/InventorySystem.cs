@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class InventorySystem : MonoBehaviour
 {
@@ -17,6 +18,33 @@ public class InventorySystem : MonoBehaviour
     public const int InventoryCols = 6;
     public const int InventorySlots = InventoryRows * InventoryCols;
 
+    public const float MaxWeight = 50f;
+    public const float HeavyThreshold = 45f;
+
+    private static readonly Dictionary<string, float> itemWeights = new Dictionary<string, float>
+    {
+        { "Madeira",  0.2f },
+        { "Galho",    0.1f },
+        { "Pedra",    0.5f },
+        { "Machado",  3.5f },
+        { "Picareta", 5.0f },
+        { "Floor",    5.0f },
+        { "Wall",     5.0f },
+    };
+
+    public static float GetItemWeight(string name) =>
+        itemWeights.TryGetValue(name, out float w) ? w : 0f;
+
+    public float GetTotalWeight()
+    {
+        float total = 0f;
+        foreach (var s in hotbar)
+            if (s != null) total += GetItemWeight(s.itemName) * s.quantity;
+        foreach (var s in inventory)
+            if (s != null) total += GetItemWeight(s.itemName) * s.quantity;
+        return total;
+    }
+
     [System.NonSerialized] public ItemStack[] hotbar;
     [System.NonSerialized] public ItemStack[] inventory;
 
@@ -28,14 +56,26 @@ public class InventorySystem : MonoBehaviour
         Instance = this;
         hotbar = new ItemStack[HotbarSlots];
         inventory = new ItemStack[InventorySlots];
-        Debug.Log($"[Inventory] Awake — Instance ID={GetInstanceID()}");
     }
 
     public void NotifyChanged() => OnInventoryChanged?.Invoke();
 
+    public void ClearAll()
+    {
+        for (int i = 0; i < hotbar.Length; i++) hotbar[i] = null;
+        for (int i = 0; i < inventory.Length; i++) inventory[i] = null;
+        NotifyChanged();
+    }
+
     public bool AddItem(string itemName, Sprite icon = null, int quantity = 1)
     {
-        Debug.Log($"[Inventory] AddItem: {itemName} x{quantity} | InstanceID={GetInstanceID()}");
+        float addedWeight = GetItemWeight(itemName) * quantity;
+        if (GetTotalWeight() + addedWeight > MaxWeight)
+        {
+            Debug.Log("[Inventory] Inventário demasiado pesado!");
+            return false;
+        }
+
 
         if (TryStack(hotbar, itemName, quantity)) { NotifyChanged(); return true; }
         if (TryStack(inventory, itemName, quantity)) { NotifyChanged(); return true; }

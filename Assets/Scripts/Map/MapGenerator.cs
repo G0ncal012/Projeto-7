@@ -30,7 +30,13 @@ public class MapGenerator : MonoBehaviour
     public GameObject treePrefab;
     public GameObject treePrefab2;
     public GameObject rocklee;
-    public GameObject playerPrefab;
+    public GameObject galhoPrefab;
+    public GameObject pedrinhaPrefab;
+    public GameObject rockDropPrefab;
+
+    [Header("Vegetação LowPolyNature")]
+    public GameObject[] grassPrefabs;   // grass_1 a grass_5
+    public GameObject[] flowerPrefabs;  // flower_1 a flower_5
 
     public void GenerateMap()
     {
@@ -88,6 +94,8 @@ public class MapGenerator : MonoBehaviour
         yield return null;
         SpawnTrees(noiseMap);
         SpawnRocks(noiseMap);
+        SpawnGroundPickups(noiseMap);
+        SpawnVegetation(noiseMap);
     }
 
     float[,] GenerateIslandMask(int width, int height)
@@ -110,18 +118,30 @@ public class MapGenerator : MonoBehaviour
         Vector3 spawnPos = new Vector3(0f, centerHeight + 2f, 0f);
 
         GameObject existing = GameObject.FindWithTag("Player");
-        if (existing != null)
-            Destroy(existing);
+        if (existing != null) DestroyImmediate(existing);
 
-        if (playerPrefab == null)
-        {
-            Debug.LogError("Player Prefab não foi atribuído no MapGenerator.");
-            return;
-        }
-
-        GameObject player = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
-        player.name = "Player";
+        GameObject player = new GameObject("Player");
         player.tag = "Player";
+        player.transform.position = spawnPos;
+
+        GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        body.transform.SetParent(player.transform);
+        body.transform.localPosition = Vector3.zero;
+        Destroy(body.GetComponent<CapsuleCollider>());
+
+        CapsuleCollider col = player.AddComponent<CapsuleCollider>();
+        col.height = 2f;
+        col.radius = 0.5f;
+
+        Rigidbody rb = player.AddComponent<Rigidbody>();
+        rb.freezeRotation = true;
+
+        player.AddComponent<PlayerController>();
+
+        Health health = player.AddComponent<Health>();
+        health.SetMaxHP(100f, refillHP: true);
+        player.AddComponent<PlayerRespawn>();
+        player.AddComponent<HungerSystem>();
     }
 
     void SpawnWater()
@@ -174,11 +194,11 @@ public class MapGenerator : MonoBehaviour
 
                 Vector3 pos = new Vector3(worldX + offsetX, worldY, worldZ + offsetZ);
 
-                if (noiseValue > 0.40f && noiseValue <= 0.55f)
+                if (noiseValue > 0.45f && noiseValue <= 0.55f)
                 {
                     if (rng.NextDouble() > 0.4f && treePrefab != null)
                     {
-                        GameObject tree = Instantiate(treePrefab, pos, Quaternion.identity);
+                        GameObject tree = GameObject.Instantiate(treePrefab, pos, Quaternion.identity);
                         tree.transform.SetParent(trees.transform);
                         tree.transform.rotation = Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f);
                         float scale = (float)(rng.NextDouble() * 0.3f + 0.7f);
@@ -189,7 +209,7 @@ public class MapGenerator : MonoBehaviour
                 {
                     if (rng.NextDouble() > 0.4f && treePrefab2 != null)
                     {
-                        GameObject tree2 = Instantiate(treePrefab2, pos, Quaternion.identity);
+                        GameObject tree2 = GameObject.Instantiate(treePrefab2, pos, Quaternion.identity);
                         tree2.transform.SetParent(trees.transform);
                         tree2.transform.rotation = Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f);
                         float scale2 = (float)(rng.NextDouble() * 0.3f + 0.7f);
@@ -237,7 +257,7 @@ public class MapGenerator : MonoBehaviour
 
                         Vector3 pos = new Vector3(worldX + offsetX, worldY, worldZ + offsetZ);
 
-                        GameObject rock = Instantiate(rocklee, pos, Quaternion.identity);
+                        GameObject rock = GameObject.Instantiate(rocklee, pos, Quaternion.identity);
                         rock.transform.SetParent(rocks.transform);
                         rock.transform.rotation = Quaternion.Euler(
                             (float)(rng.NextDouble() * 30f),
@@ -254,7 +274,145 @@ public class MapGenerator : MonoBehaviour
                             scale = (float)(rng.NextDouble() * 0.1f + 0.05f);
 
                         rock.transform.localScale = Vector3.one * scale;
+
+                        RockBreaking rockBreaking = rock.AddComponent<RockBreaking>();
+                        if (rockDropPrefab != null)
+                            rockBreaking.Setup(rockDropPrefab);
                     }
+                }
+            }
+        }
+    }
+
+    void SpawnGroundPickups(float[,] noiseMap)
+    {
+        GameObject existing = GameObject.Find("GroundPickups");
+        if (existing != null) Destroy(existing);
+
+        GameObject container = new GameObject("GroundPickups");
+        System.Random rng = new System.Random(seed + 2);
+        LayerMask terrainMask = LayerMask.GetMask("Terrain");
+
+        for (int y = 0; y < mapHeight; y += 5)
+        {
+            for (int x = 0; x < mapWidth; x += 5)
+            {
+                float noiseValue = noiseMap[x, y];
+                float worldX = x - mapWidth / 2f;
+                float worldZ = -(y - mapHeight / 2f);
+
+                if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f)
+                    continue;
+
+                float offsetX = (float)(rng.NextDouble() - 0.5f) * 4f;
+                float offsetZ = (float)(rng.NextDouble() - 0.5f) * 4f;
+
+                if (!Physics.Raycast(new Vector3(worldX + offsetX, 100f, worldZ + offsetZ), Vector3.down, out RaycastHit hit, 200f, terrainMask))
+                    continue;
+
+                Vector3 pos = new Vector3(worldX + offsetX, hit.point.y + 0.05f, worldZ + offsetZ);
+
+                // Galhos — nas zonas de floresta (mesmo range das árvores)
+                if (galhoPrefab != null && noiseValue > 0.40f && noiseValue <= 0.75f)
+                {
+                    if (rng.NextDouble() > 0.75f)
+                    {
+                        GameObject galho = Instantiate(galhoPrefab, pos, Quaternion.Euler(90f, (float)(rng.NextDouble() * 360f), 0f));
+                        galho.transform.SetParent(container.transform);
+                        galho.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.05f + 0.05f);
+                    }
+                }
+
+                // Pedrinhas — nas zonas de rocha e erva densa
+                if (pedrinhaPrefab != null && noiseValue > 0.50f && noiseValue <= 0.85f)
+                {
+                    if (rng.NextDouble() > 0.80f)
+                    {
+                        Quaternion rot = Quaternion.Euler(
+                            (float)(rng.NextDouble() * 30f),
+                            (float)(rng.NextDouble() * 360f),
+                            (float)(rng.NextDouble() * 30f)
+                        );
+                        GameObject pedra = Instantiate(pedrinhaPrefab, pos, rot);
+                        pedra.transform.SetParent(container.transform);
+                        pedra.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.05f + 0.03f);
+                    }
+                }
+            }
+        }
+    }
+
+    void SpawnVegetation(float[,] noiseMap)
+    {
+        GameObject existing = GameObject.Find("Vegetation");
+        if (existing != null) Destroy(existing);
+
+        GameObject container = new GameObject("Vegetation");
+        System.Random rng = new System.Random(seed + 3);
+        LayerMask terrainMask = LayerMask.GetMask("Terrain");
+
+        // Grass: cobre toda a zona verde (Erva + Erva Densa) — noise 0.45 a 0.80
+        if (grassPrefabs != null && grassPrefabs.Length > 0)
+        {
+            for (int y = 0; y < mapHeight; y += 2)
+            {
+                for (int x = 0; x < mapWidth; x += 2)
+                {
+                    float noiseValue = noiseMap[x, y];
+                    if (noiseValue <= 0.45f || noiseValue > 0.80f) continue;
+                    if (rng.NextDouble() > 0.80f) continue;
+
+                    float worldX = x - mapWidth / 2f;
+                    float worldZ = -(y - mapHeight / 2f);
+                    if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f) continue;
+
+                    float offsetX = (float)(rng.NextDouble() - 0.5f) * 1.5f;
+                    float offsetZ = (float)(rng.NextDouble() - 0.5f) * 1.5f;
+                    if (!Physics.Raycast(new Vector3(worldX + offsetX, 100f, worldZ + offsetZ), Vector3.down, out RaycastHit hit, 200f, terrainMask)) continue;
+
+                    Vector3 pos = new Vector3(worldX + offsetX, hit.point.y + 0.02f, worldZ + offsetZ);
+                    GameObject prefab = grassPrefabs[rng.Next(grassPrefabs.Length)];
+                    if (prefab == null) continue;
+
+                    GameObject grass = Instantiate(prefab, pos, Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f));
+                    grass.transform.SetParent(container.transform);
+                    grass.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.4f + 0.6f);
+                    foreach (Collider c in grass.GetComponentsInChildren<Collider>()) Destroy(c);
+                }
+            }
+        }
+
+        // Flowers: apenas na borda da areia junto à água — noise 0.41 a 0.50
+        // e só acima do nível da água (y > 0.15f) para não dar spawn dentro da água
+        if (flowerPrefabs != null && flowerPrefabs.Length > 0)
+        {
+            for (int y = 0; y < mapHeight; y += 3)
+            {
+                for (int x = 0; x < mapWidth; x += 3)
+                {
+                    float noiseValue = noiseMap[x, y];
+                    if (noiseValue <= 0.41f || noiseValue > 0.50f) continue;
+                    if (rng.NextDouble() > 0.55f) continue;
+
+                    float worldX = x - mapWidth / 2f;
+                    float worldZ = -(y - mapHeight / 2f);
+                    if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f) continue;
+
+                    float offsetX = (float)(rng.NextDouble() - 0.5f) * 1.5f;
+                    float offsetZ = (float)(rng.NextDouble() - 0.5f) * 1.5f;
+                    if (!Physics.Raycast(new Vector3(worldX + offsetX, 100f, worldZ + offsetZ), Vector3.down, out RaycastHit hit, 200f, terrainMask)) continue;
+
+                    // Garante que está acima do nível da água
+                    if (hit.point.y < 0.2f) continue;
+
+                    Vector3 pos = new Vector3(worldX + offsetX, hit.point.y + 0.02f, worldZ + offsetZ);
+                    GameObject prefab = flowerPrefabs[rng.Next(flowerPrefabs.Length)];
+                    if (prefab == null) continue;
+
+                    GameObject flower = Instantiate(prefab, pos, Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f));
+                    flower.transform.SetParent(container.transform);
+                    flower.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.3f + 0.7f);
+                    foreach (Collider c in flower.GetComponentsInChildren<Collider>()) Destroy(c);
                 }
             }
         }

@@ -25,3 +25,19 @@ MonoBehaviour:
     - itemName: Madeira
       quantity: 1
     outputQuantity: 1
+  - recipeName: Machado
+    icon: {fileID: 0}
+    ingredients:
+    - itemName: Madeira
+      quantity: 1
+    - itemName: Pedra
+      quantity: 1
+    outputQuantity: 1
+  - recipeName: Picareta
+    icon: {fileID: 0}
+    ingredients:
+    - itemName: Madeira
+      quantity: 1
+    - itemName: Pedra
+      quantity: 1
+    outputQuantity: 1

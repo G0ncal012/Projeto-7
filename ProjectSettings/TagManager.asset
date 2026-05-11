@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Buildables
   - Tree
+  - Mob
+  - Animal
+  - Enemy
+  - Rock
   layers:
   - Default
   - TransparentFX

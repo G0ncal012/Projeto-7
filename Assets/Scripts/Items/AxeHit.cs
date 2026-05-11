@@ -7,6 +7,9 @@ public class AxeHit : MonoBehaviour
     [Tooltip("Distância máxima do corte")]
     public float hitRange = 3f;
 
+    [Tooltip("Dano por golpe de machado")]
+    public float damagePerHit = 34f;
+
     [Tooltip("Layer da árvore (opcional, para não acertar noutras coisas)")]
     public LayerMask hitLayers = ~0; // por defeito acerta em tudo
 
@@ -42,7 +45,7 @@ public class AxeHit : MonoBehaviour
             
             if (hitable != null)
             {
-                hitable.Execute();
+                hitable.TakeDamage(damagePerHit);
             }
         }
     }
