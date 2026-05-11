@@ -22,26 +22,92 @@ public class PlayerController : MonoBehaviour
     private bool isInWater = false;
     private GameObject underwaterOverlay;
 
+    void Awake()
+    {
+        enabled = true;
+        gameObject.SetActive(true);
+    }
+
     void Start()
     {
         transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+
         rb = GetComponent<Rigidbody>();
 
-        GameObject camObj = new GameObject("PlayerCamera");
-        camObj.transform.SetParent(transform);
-        camObj.transform.localPosition = new Vector3(0f, 2f, 0f);
-        camObj.transform.localRotation = Quaternion.identity;
-        cam = camObj.AddComponent<Camera>();
-        camObj.tag = "MainCamera";
-        camObj.AddComponent<AudioListener>();
+        if (rb == null)
+            rb = gameObject.AddComponent<Rigidbody>();
+
+        rb.freezeRotation = true;
+
+        CapsuleCollider col = GetComponent<CapsuleCollider>();
+
+        if (col == null)
+            col = gameObject.AddComponent<CapsuleCollider>();
+
+        col.height = 2f;
+        col.radius = 0.5f;
+        col.center = new Vector3(0f, 1f, 0f);
+
+        Animator animator = GetComponentInChildren<Animator>(true);
+        if (animator != null)
+        {
+            animator.gameObject.SetActive(true);
+            animator.enabled = true;
+        }
+
+        SetupCamera();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        Debug.Log("PlayerController ativo e PlayerCamera criada/ativada");
+    }
+
+    void SetupCamera()
+    {
+        Transform existingCam = transform.Find("PlayerCamera");
+        GameObject camObj;
+
+        if (existingCam != null)
+        {
+            camObj = existingCam.gameObject;
+        }
+        else
+        {
+            camObj = new GameObject("PlayerCamera");
+            camObj.transform.SetParent(transform);
+        }
+
+        camObj.SetActive(true);
+        camObj.transform.localPosition = new Vector3(0f, 2f, 0f);
+        camObj.transform.localRotation = Quaternion.identity;
+        camObj.tag = "MainCamera";
+
+        cam = camObj.GetComponent<Camera>();
+
+        if (cam == null)
+            cam = camObj.AddComponent<Camera>();
+
+        cam.enabled = true;
+
+        AudioListener listener = camObj.GetComponent<AudioListener>();
+
+        if (listener == null)
+            listener = camObj.AddComponent<AudioListener>();
+
+        listener.enabled = true;
+
+        Camera[] allCams = FindObjectsByType<Camera>(FindObjectsSortMode.None);
+
+        foreach (Camera c in allCams)
+        {
+            if (c != cam)
+                c.enabled = false;
+        }
     }
 
     void Update()
     {
-        // Não processa input de jogo com inventário aberto
         if (InventoryUI.IsOpen) return;
 
         HandleLook();
@@ -81,6 +147,7 @@ public class PlayerController : MonoBehaviour
         Vector3 move = transform.right * x + transform.forward * z;
         Vector3 newVelocity = move * currentSpeed;
         newVelocity.y = rb.linearVelocity.y;
+
         rb.linearVelocity = newVelocity;
     }
 
@@ -103,6 +170,8 @@ public class PlayerController : MonoBehaviour
 
     void HandleLook()
     {
+        if (cam == null) return;
+
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
@@ -110,12 +179,20 @@ public class PlayerController : MonoBehaviour
 
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -80f, 80f);
+
         cam.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
     void HandleJump()
     {
-        bool isGrounded = Physics.Raycast(transform.position, Vector3.down, GetComponent<CapsuleCollider>().height * transform.localScale.y * 0.6f, ~LayerMask.GetMask("Player"));
+        CapsuleCollider col = GetComponent<CapsuleCollider>();
+
+        bool isGrounded = Physics.Raycast(
+            transform.position + Vector3.up * 0.1f,
+            Vector3.down,
+            col.height * transform.localScale.y * 0.7f,
+            ~LayerMask.GetMask("Player")
+        );
 
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
@@ -128,6 +205,8 @@ public class PlayerController : MonoBehaviour
 
     void CreateUnderwaterOverlay()
     {
+        if (cam == null) return;
+
         underwaterOverlay = GameObject.CreatePrimitive(PrimitiveType.Quad);
         underwaterOverlay.name = "UnderwaterOverlay";
         underwaterOverlay.transform.SetParent(cam.transform);
@@ -139,12 +218,6 @@ public class PlayerController : MonoBehaviour
 
         Material mat = new Material(Shader.Find("Unlit/Color"));
         mat.color = new Color(0.0f, 0.2f, 0.6f, 0.4f);
-        mat.SetFloat("_Mode", 3);
-        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-        mat.SetInt("_ZWrite", 0);
-        mat.EnableKeyword("_ALPHABLEND_ON");
-        mat.renderQueue = 3000;
 
         underwaterOverlay.GetComponent<Renderer>().material = mat;
         underwaterOverlay.SetActive(false);
@@ -154,6 +227,8 @@ public class PlayerController : MonoBehaviour
     {
         if (underwaterOverlay == null)
             CreateUnderwaterOverlay();
+
+        if (underwaterOverlay == null) return;
 
         if (isInWater)
         {
