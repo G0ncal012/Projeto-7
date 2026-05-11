@@ -30,6 +30,7 @@ public class MapGenerator : MonoBehaviour
     public GameObject treePrefab;
     public GameObject treePrefab2;
     public GameObject rocklee;
+    public GameObject playerPrefab;
 
     public void GenerateMap()
     {
@@ -109,25 +110,18 @@ public class MapGenerator : MonoBehaviour
         Vector3 spawnPos = new Vector3(0f, centerHeight + 2f, 0f);
 
         GameObject existing = GameObject.FindWithTag("Player");
-        if (existing != null) DestroyImmediate(existing);
+        if (existing != null)
+            Destroy(existing);
 
-        GameObject player = new GameObject("Player");
+        if (playerPrefab == null)
+        {
+            Debug.LogError("Player Prefab não foi atribuído no MapGenerator.");
+            return;
+        }
+
+        GameObject player = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+        player.name = "Player";
         player.tag = "Player";
-        player.transform.position = spawnPos;
-
-        GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        body.transform.SetParent(player.transform);
-        body.transform.localPosition = Vector3.zero;
-        Destroy(body.GetComponent<CapsuleCollider>());
-
-        CapsuleCollider col = player.AddComponent<CapsuleCollider>();
-        col.height = 2f;
-        col.radius = 0.5f;
-
-        Rigidbody rb = player.AddComponent<Rigidbody>();
-        rb.freezeRotation = true;
-
-        player.AddComponent<PlayerController>();
     }
 
     void SpawnWater()
@@ -184,7 +178,7 @@ public class MapGenerator : MonoBehaviour
                 {
                     if (rng.NextDouble() > 0.4f && treePrefab != null)
                     {
-                        GameObject tree = GameObject.Instantiate(treePrefab, pos, Quaternion.identity);
+                        GameObject tree = Instantiate(treePrefab, pos, Quaternion.identity);
                         tree.transform.SetParent(trees.transform);
                         tree.transform.rotation = Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f);
                         float scale = (float)(rng.NextDouble() * 0.3f + 0.7f);
@@ -195,7 +189,7 @@ public class MapGenerator : MonoBehaviour
                 {
                     if (rng.NextDouble() > 0.4f && treePrefab2 != null)
                     {
-                        GameObject tree2 = GameObject.Instantiate(treePrefab2, pos, Quaternion.identity);
+                        GameObject tree2 = Instantiate(treePrefab2, pos, Quaternion.identity);
                         tree2.transform.SetParent(trees.transform);
                         tree2.transform.rotation = Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f);
                         float scale2 = (float)(rng.NextDouble() * 0.3f + 0.7f);
@@ -243,7 +237,7 @@ public class MapGenerator : MonoBehaviour
 
                         Vector3 pos = new Vector3(worldX + offsetX, worldY, worldZ + offsetZ);
 
-                        GameObject rock = GameObject.Instantiate(rocklee, pos, Quaternion.identity);
+                        GameObject rock = Instantiate(rocklee, pos, Quaternion.identity);
                         rock.transform.SetParent(rocks.transform);
                         rock.transform.rotation = Quaternion.Euler(
                             (float)(rng.NextDouble() * 30f),
