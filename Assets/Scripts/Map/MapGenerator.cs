@@ -33,6 +33,7 @@ public class MapGenerator : MonoBehaviour
     public GameObject galhoPrefab;
     public GameObject pedrinhaPrefab;
     public GameObject rockDropPrefab;
+    public GameObject playerPrefab;
 
     [Header("Vegetação LowPolyNature")]
     public GameObject[] grassPrefabs;   // grass_1 a grass_5
@@ -113,36 +114,59 @@ public class MapGenerator : MonoBehaviour
     }
 
     void SpawnPlayer(float[,] noiseMap)
+{
+    float centerHeight = heightCurve.Evaluate(noiseMap[mapWidth / 2, mapHeight / 2]) * heightMultiplier;
+    Vector3 spawnPos = new Vector3(0f, centerHeight + 2f, 0f);
+
+    if (playerPrefab == null)
     {
-        float centerHeight = heightCurve.Evaluate(noiseMap[mapWidth / 2, mapHeight / 2]) * heightMultiplier;
-        Vector3 spawnPos = new Vector3(0f, centerHeight + 2f, 0f);
-
-        GameObject existing = GameObject.FindWithTag("Player");
-        if (existing != null) DestroyImmediate(existing);
-
-        GameObject player = new GameObject("Player");
-        player.tag = "Player";
-        player.transform.position = spawnPos;
-
-        GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        body.transform.SetParent(player.transform);
-        body.transform.localPosition = Vector3.zero;
-        Destroy(body.GetComponent<CapsuleCollider>());
-
-        CapsuleCollider col = player.AddComponent<CapsuleCollider>();
-        col.height = 2f;
-        col.radius = 0.5f;
-
-        Rigidbody rb = player.AddComponent<Rigidbody>();
-        rb.freezeRotation = true;
-
-        player.AddComponent<PlayerController>();
-
-        Health health = player.AddComponent<Health>();
-        health.SetMaxHP(100f, refillHP: true);
-        player.AddComponent<PlayerRespawn>();
-        player.AddComponent<HungerSystem>();
+        Debug.LogError("Player Prefab não foi atribuído no MapGenerator.");
+        return;
     }
+
+    GameObject existing = GameObject.FindWithTag("Player");
+    if (existing != null)
+        Destroy(existing);
+
+    GameObject player = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+    player.name = "Player";
+    player.tag = "Player";
+    player.SetActive(true);
+
+    PlayerController pc = player.GetComponent<PlayerController>();
+    if (pc != null)
+        pc.enabled = true;
+
+    Animator animator = player.GetComponentInChildren<Animator>(true);
+    if (animator != null)
+    {
+        animator.gameObject.SetActive(true);
+        animator.enabled = true;
+    }
+
+    Camera cam = player.GetComponentInChildren<Camera>(true);
+    if (cam != null)
+    {
+        cam.gameObject.SetActive(true);
+        cam.enabled = true;
+    }
+
+    AudioListener listener = player.GetComponentInChildren<AudioListener>(true);
+    if (listener != null)
+        listener.enabled = true;
+
+    Health health = player.GetComponent<Health>();
+    if (health == null)
+        health = player.AddComponent<Health>();
+
+    health.SetMaxHP(100f, refillHP: true);
+
+    if (player.GetComponent<PlayerRespawn>() == null)
+        player.AddComponent<PlayerRespawn>();
+
+    if (player.GetComponent<HungerSystem>() == null)
+        player.AddComponent<HungerSystem>();
+}
 
     void SpawnWater()
     {
