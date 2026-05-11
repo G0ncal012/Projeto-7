@@ -81,7 +81,7 @@ public class MapGenerator : MonoBehaviour
 
             if (Application.isPlaying)
             {
-                SpawnPlayer(noiseMap);
+                
                 SpawnWater();
                 SpawnMapBorder();
                 StartCoroutine(SpawnAfterPhysics(noiseMap));
