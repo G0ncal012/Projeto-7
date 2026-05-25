@@ -79,7 +79,7 @@ public class PlayerController : MonoBehaviour
         }
 
         camObj.SetActive(true);
-        camObj.transform.localPosition = new Vector3(0f, 2f, 0f);
+        camObj.transform.localPosition = new Vector3(0f, 1.25f, 0.15f);
         camObj.transform.localRotation = Quaternion.identity;
         camObj.tag = "MainCamera";
 
