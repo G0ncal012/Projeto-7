@@ -30,7 +30,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+        transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
 
         rb = GetComponent<Rigidbody>();
 
@@ -118,12 +118,6 @@ public class PlayerController : MonoBehaviour
             HandleJump();
 
         HandleUnderwaterEffect();
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
     }
 
     void FixedUpdate()

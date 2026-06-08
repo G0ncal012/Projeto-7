@@ -487,7 +487,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -1491,6 +1491,10 @@ MonoBehaviour:
   - {fileID: 600573730427011581, guid: 0f35d375925438e428698cd74825e7d0, type: 3}
   - {fileID: 190139569583134520, guid: ac70161bd66598043b900c31738f32e8, type: 3}
   - {fileID: 6803290075799680600, guid: f9ae9113883876343bdebec07be281f1, type: 3}
+  castlePrefab: {fileID: 3622043868566341715, guid: 7684e543738d75d43983976e2a86f143, type: 3}
+  castleFootprintSize: 20
+  castleSafetyMargin: 10
+  castleMaxHeightVariance: 0.5
 --- !u!4 &2105843099
 Transform:
   m_ObjectHideFlags: 0

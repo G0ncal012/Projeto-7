@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MapGenerator : MonoBehaviour
@@ -38,6 +39,15 @@ public class MapGenerator : MonoBehaviour
     [Header("Vegetação LowPolyNature")]
     public GameObject[] grassPrefabs;   // grass_1 a grass_5
     public GameObject[] flowerPrefabs;  // flower_1 a flower_5
+
+    [Header("Castelo")]
+    public GameObject castlePrefab;
+    public float castleFootprintSize = 20f;
+    public float castleSafetyMargin = 10f;
+    public float castleMaxHeightVariance = 0.5f;
+
+    private Vector3 castlePosition;
+    private bool castleSpawned;
 
     public void GenerateMap()
     {
@@ -93,10 +103,194 @@ public class MapGenerator : MonoBehaviour
     {
         yield return null;
         yield return null;
+        MovePlayerToSafeSpot(noiseMap);
+        SpawnCastle(noiseMap);
         SpawnTrees(noiseMap);
         SpawnRocks(noiseMap);
         SpawnGroundPickups(noiseMap);
         SpawnVegetation(noiseMap);
+    }
+
+    void MovePlayerToSafeSpot(float[,] noiseMap)
+    {
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj == null) return;
+
+        LayerMask terrainMask = LayerMask.GetMask("Terrain");
+        int cx = mapWidth  / 2;
+        int cy = mapHeight / 2;
+
+        // Procurar em espiral a partir do centro até encontrar uma zona de relva
+        for (int radius = 0; radius < mapWidth / 2; radius += 4)
+        {
+            for (int dy = -radius; dy <= radius; dy += 4)
+            {
+                for (int dx = -radius; dx <= radius; dx += 4)
+                {
+                    // Só percorrer a borda de cada raio
+                    if (Mathf.Abs(dx) != radius && Mathf.Abs(dy) != radius) continue;
+
+                    int nx = cx + dx;
+                    int ny = cy + dy;
+                    if (nx < 0 || nx >= mapWidth || ny < 0 || ny >= mapHeight) continue;
+
+                    float noise = noiseMap[nx, ny];
+                    if (noise <= 0.45f || noise > 0.65f) continue; // só relva
+
+                    float worldX = nx - mapWidth  / 2f;
+                    float worldZ = -(ny - mapHeight / 2f);
+
+                    if (!Physics.Raycast(new Vector3(worldX, 100f, worldZ), Vector3.down,
+                            out RaycastHit hit, 200f, terrainMask)) continue;
+
+                    playerObj.transform.position = new Vector3(worldX, hit.point.y + 1f, worldZ);
+
+                    Rigidbody rb = playerObj.GetComponent<Rigidbody>();
+                    if (rb != null) rb.linearVelocity = Vector3.zero;
+
+                    Debug.Log($"[PlayerSpawn] Jogador movido para relva em {playerObj.transform.position}");
+                    return;
+                }
+            }
+        }
+
+        Debug.LogWarning("[PlayerSpawn] Não foi encontrada posição de relva — jogador mantém posição original.");
+    }
+
+    void SpawnCastle(float[,] noiseMap)
+    {
+        GameObject existing = GameObject.Find("Castle");
+        if (existing != null) Destroy(existing);
+
+        castleSpawned = false;
+        castlePosition = new Vector3(-99999f, 0f, -99999f);
+
+        if (castlePrefab == null)
+        {
+            Debug.LogWarning("[CastleSpawn] castlePrefab não atribuído.");
+            return;
+        }
+
+        LayerMask terrainMask = LayerMask.GetMask("Terrain");
+        System.Random rng = new System.Random(seed + 10);
+
+        int footprintCells = Mathf.CeilToInt(castleFootprintSize);
+        int borderCells = footprintCells + 20;
+        int scanStep = 8;
+
+        List<Vector2Int> candidates = new List<Vector2Int>();
+
+        for (int y = borderCells; y < mapHeight - borderCells; y += scanStep)
+        {
+            for (int x = borderCells; x < mapWidth - borderCells; x += scanStep)
+            {
+                float nv = noiseMap[x, y];
+                if (nv > 0.45f && nv <= 0.65f)
+                    candidates.Add(new Vector2Int(x, y));
+            }
+        }
+
+        if (candidates.Count == 0)
+        {
+            Debug.LogWarning("[CastleSpawn] Nenhuma posição candidata encontrada.");
+            return;
+        }
+
+        // Fisher-Yates shuffle com o seed do mapa
+        for (int i = candidates.Count - 1; i > 0; i--)
+        {
+            int j = rng.Next(i + 1);
+            Vector2Int tmp = candidates[i];
+            candidates[i] = candidates[j];
+            candidates[j] = tmp;
+        }
+
+        int flatStep = Mathf.Max(4, footprintCells / 3);
+
+        foreach (Vector2Int c in candidates)
+        {
+            // 1. Verificar no noise map que toda a área do castelo é terreno válido (sem água/areia/rocha)
+            bool areaValid = true;
+            for (int dy = -footprintCells; dy <= footprintCells && areaValid; dy += 4)
+            {
+                for (int dx = -footprintCells; dx <= footprintCells && areaValid; dx += 4)
+                {
+                    int nx = c.x + dx;
+                    int ny = c.y + dy;
+                    if (nx < 0 || nx >= mapWidth || ny < 0 || ny >= mapHeight)
+                    { areaValid = false; break; }
+                    float nv = noiseMap[nx, ny];
+                    if (nv <= 0.45f || nv > 0.80f)
+                    { areaValid = false; break; }
+                }
+            }
+            if (!areaValid) continue;
+
+            // 2. Verificar planura via raycasts
+            float worldX = c.x - mapWidth / 2f;
+            float worldZ = -(c.y - mapHeight / 2f);
+
+            float minY = float.MaxValue;
+            float maxY = float.MinValue;
+            int samples = 0;
+
+            for (int dy = -footprintCells; dy <= footprintCells; dy += flatStep)
+            {
+                for (int dx = -footprintCells; dx <= footprintCells; dx += flatStep)
+                {
+                    float sx = worldX + dx;
+                    float sz = worldZ + dy;
+                    if (Physics.Raycast(new Vector3(sx, 100f, sz), Vector3.down, out RaycastHit sh, 200f, terrainMask))
+                    {
+                        minY = Mathf.Min(minY, sh.point.y);
+                        maxY = Mathf.Max(maxY, sh.point.y);
+                        samples++;
+                    }
+                }
+            }
+
+            if (samples == 0 || maxY - minY > castleMaxHeightVariance) continue;
+
+            // 3. Obter posição exata do centro
+            if (!Physics.Raycast(new Vector3(worldX, 100f, worldZ), Vector3.down, out RaycastHit centerHit, 200f, terrainMask))
+                continue;
+
+            Vector3 spawnPos = new Vector3(worldX, centerHit.point.y, worldZ);
+            float yRot = (float)(rng.NextDouble() * 360.0);
+            GameObject castle = Instantiate(castlePrefab, spawnPos, Quaternion.Euler(0f, yRot, 0f));
+            castle.name = "Castle";
+
+            // Corrigir Y: garantir que a base visual do castelo assenta no terreno,
+            // independentemente de onde o pivot do prefab está no modelo.
+            Renderer[] castleRenderers = castle.GetComponentsInChildren<Renderer>();
+            if (castleRenderers.Length > 0)
+            {
+                Bounds totalBounds = castleRenderers[0].bounds;
+                for (int i = 1; i < castleRenderers.Length; i++)
+                    totalBounds.Encapsulate(castleRenderers[i].bounds);
+                // bottomLift = distância entre o pivot e o ponto mais baixo do modelo
+                float bottomLift = castle.transform.position.y - totalBounds.min.y;
+                // Encaixar ligeiramente no terreno para parecer mais natural
+                castle.transform.position = new Vector3(spawnPos.x, spawnPos.y + bottomLift - 1.5f, spawnPos.z);
+                spawnPos = castle.transform.position;
+            }
+
+            castlePosition = spawnPos;
+            castleSpawned = true;
+            Debug.Log($"[CastleSpawn] Castelo colocado em {spawnPos} (bounds ajustados)");
+            return;
+        }
+
+        Debug.LogWarning("[CastleSpawn] Não foi encontrada posição válida para o castelo.");
+    }
+
+    bool IsInCastleExclusionZone(float worldX, float worldZ)
+    {
+        if (!castleSpawned) return false;
+        float totalRadius = castleFootprintSize + castleSafetyMargin;
+        float dx = worldX - castlePosition.x;
+        float dz = worldZ - castlePosition.z;
+        return (dx * dx + dz * dz) < (totalRadius * totalRadius);
     }
 
     float[,] GenerateIslandMask(int width, int height)
@@ -207,6 +401,8 @@ public class MapGenerator : MonoBehaviour
                 if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f)
                     continue;
 
+                if (IsInCastleExclusionZone(worldX, worldZ)) continue;
+
                 float offsetX = (float)(rng.NextDouble() - 0.5f) * 3f;
                 float offsetZ = (float)(rng.NextDouble() - 0.5f) * 3f;
                 float worldY = 0f;
@@ -227,6 +423,7 @@ public class MapGenerator : MonoBehaviour
                         tree.transform.rotation = Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f);
                         float scale = (float)(rng.NextDouble() * 0.3f + 0.7f);
                         tree.transform.localScale = Vector3.one * scale;
+                        FixTreeColliders(tree);
                     }
                 }
                 else if (noiseValue > 0.55f && noiseValue <= 0.75f)
@@ -238,10 +435,27 @@ public class MapGenerator : MonoBehaviour
                         tree2.transform.rotation = Quaternion.Euler(0f, (float)(rng.NextDouble() * 360f), 0f);
                         float scale2 = (float)(rng.NextDouble() * 0.3f + 0.7f);
                         tree2.transform.localScale = Vector3.one * scale2;
+                        FixTreeColliders(tree2);
                     }
                 }
             }
         }
+    }
+
+    void FixTreeColliders(GameObject tree)
+    {
+        
+        Transform troncoFolhas = tree.transform.Find("TroncoFolhas");
+        if (troncoFolhas != null)
+            foreach (Collider col in troncoFolhas.GetComponentsInChildren<Collider>(true))
+                col.enabled = false;
+
+        // Cápsula vertical no root — representa apenas o tronco físico
+        CapsuleCollider trunk = tree.AddComponent<CapsuleCollider>();
+        trunk.direction = 1;                          // eixo Y (vertical)
+        trunk.radius    = 0.3f;                       // ~30 cm de raio
+        trunk.height    = 4.0f;                       // 4 m de altura de tronco
+        trunk.center    = new Vector3(0f, 2f, 0f);    // centrado a 2 m do chão
     }
 
     void SpawnRocks(float[,] noiseMap)
@@ -265,6 +479,8 @@ public class MapGenerator : MonoBehaviour
 
                 if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f)
                     continue;
+
+                if (IsInCastleExclusionZone(worldX, worldZ)) continue;
 
                 if (noiseValue > 0.45f && noiseValue <= 1f)
                 {
@@ -328,6 +544,8 @@ public class MapGenerator : MonoBehaviour
                 if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f)
                     continue;
 
+                if (IsInCastleExclusionZone(worldX, worldZ)) continue;
+
                 float offsetX = (float)(rng.NextDouble() - 0.5f) * 4f;
                 float offsetZ = (float)(rng.NextDouble() - 0.5f) * 4f;
 
@@ -336,8 +554,8 @@ public class MapGenerator : MonoBehaviour
 
                 Vector3 pos = new Vector3(worldX + offsetX, hit.point.y + 0.05f, worldZ + offsetZ);
 
-                // Galhos — nas zonas de floresta (mesmo range das árvores)
-                if (galhoPrefab != null && noiseValue > 0.40f && noiseValue <= 0.75f)
+                // Galhos — apenas em zonas de relva e floresta (exclui areia e água)
+                if (galhoPrefab != null && noiseValue > 0.45f && noiseValue <= 0.75f)
                 {
                     if (rng.NextDouble() > 0.75f)
                     {
@@ -389,6 +607,7 @@ public class MapGenerator : MonoBehaviour
                     float worldX = x - mapWidth / 2f;
                     float worldZ = -(y - mapHeight / 2f);
                     if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f) continue;
+                    if (IsInCastleExclusionZone(worldX, worldZ)) continue;
 
                     float offsetX = (float)(rng.NextDouble() - 0.5f) * 1.5f;
                     float offsetZ = (float)(rng.NextDouble() - 0.5f) * 1.5f;
@@ -406,8 +625,8 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        // Flowers: apenas na borda da areia junto à água — noise 0.41 a 0.50
-        // e só acima do nível da água (y > 0.15f) para não dar spawn dentro da água
+        // Flowers: apenas em zonas de relva (Erva) — noise 0.45 a 0.65
+        // Excluí: água (≤0.40), areia (0.40-0.45) e erva densa/rocha (>0.65)
         if (flowerPrefabs != null && flowerPrefabs.Length > 0)
         {
             for (int y = 0; y < mapHeight; y += 3)
@@ -415,19 +634,17 @@ public class MapGenerator : MonoBehaviour
                 for (int x = 0; x < mapWidth; x += 3)
                 {
                     float noiseValue = noiseMap[x, y];
-                    if (noiseValue <= 0.41f || noiseValue > 0.50f) continue;
+                    if (noiseValue <= 0.45f || noiseValue > 0.65f) continue;
                     if (rng.NextDouble() > 0.55f) continue;
 
                     float worldX = x - mapWidth / 2f;
                     float worldZ = -(y - mapHeight / 2f);
                     if (Mathf.Abs(worldX) > mapWidth / 2f - 10f || Mathf.Abs(worldZ) > mapHeight / 2f - 10f) continue;
+                    if (IsInCastleExclusionZone(worldX, worldZ)) continue;
 
                     float offsetX = (float)(rng.NextDouble() - 0.5f) * 1.5f;
                     float offsetZ = (float)(rng.NextDouble() - 0.5f) * 1.5f;
                     if (!Physics.Raycast(new Vector3(worldX + offsetX, 100f, worldZ + offsetZ), Vector3.down, out RaycastHit hit, 200f, terrainMask)) continue;
-
-                    // Garante que está acima do nível da água
-                    if (hit.point.y < 0.2f) continue;
 
                     Vector3 pos = new Vector3(worldX + offsetX, hit.point.y + 0.02f, worldZ + offsetZ);
                     GameObject prefab = flowerPrefabs[rng.Next(flowerPrefabs.Length)];
@@ -500,7 +717,7 @@ public class MapGenerator : MonoBehaviour
         );
 
         seed = Random.Range(0, 100000);
-        GenerateMap();
+        // O mapa só é gerado quando o jogador clica em "Jogar" no menu inicial (ver MainMenuUI).
     }
 
     void OnValidate()
