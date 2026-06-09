@@ -11,7 +11,6 @@ public class PickaxeTool : MonoBehaviour
     [Header("Highlight")]
     [SerializeField] private Color highlightColor = new Color(0.3f, 0.6f, 1f, 0.7f);
 
-    private bool isActive = false;
     private float lastHitTime = -999f;
     private Camera cam;
 
@@ -21,13 +20,20 @@ public class PickaxeTool : MonoBehaviour
 
     private void Start()
     {
-        cam = FindAnyObjectByType<Camera>();
+        cam = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
+    }
+
+    private bool IsPicaretaEquipped()
+    {
+        if (InventorySystem.Instance == null) return false;
+        var stack = InventorySystem.Instance.hotbar[InventoryUI.SelectedHotbarSlot];
+        return stack != null && stack.itemName == "Picareta";
     }
 
     private void Update()
     {
-        if (cam == null) cam = FindAnyObjectByType<Camera>();
-        if (!isActive) { ClearHighlight(); return; }
+        if (cam == null) cam = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
+        if (!IsPicaretaEquipped()) { ClearHighlight(); return; }
 
         GameObject target = GetTarget();
         UpdateHighlight(target);
@@ -44,11 +50,7 @@ public class PickaxeTool : MonoBehaviour
         }
     }
 
-    public void SetPickaxeActive(bool active)
-    {
-        isActive = active;
-        if (!active) ClearHighlight();
-    }
+    public void SetPickaxeActive(bool active) { } // mantido por compatibilidade — activação gerida internamente
 
     private GameObject GetTarget()
     {

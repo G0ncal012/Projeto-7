@@ -13,16 +13,24 @@ using UnityEngine;
 public class NightMobSpawner : MonoBehaviour
 {
     [Header("Prefabs dos Mobs")]
-    [Tooltip("Prefabs do Mob 1 (lento/forte) — ex. Zumbi")]
+    [Tooltip("Prefabs do Mob 1 (lento/forte). Se vazio, carrega de Resources/Mobs/")]
     [SerializeField] private GameObject[] mob1Prefabs;
 
-    [Tooltip("Prefabs do Mob 2 (rápido/fraco) — ex. Lobo)")]
+    [Tooltip("Prefabs do Mob 2 (rápido/fraco). Opcional.")]
     [SerializeField] private GameObject[] mob2Prefabs;
 
     [Header("Limite de Mobs")]
-    [Tooltip("Número máximo de mobs de cada tipo em simultâneo")]
-    [SerializeField] private int maxMob1 = 3;
+    [SerializeField] private int maxMob1 = 6;
     [SerializeField] private int maxMob2 = 4;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void Bootstrap()
+    {
+        if (FindFirstObjectByType<NightMobSpawner>() != null) return;
+        GameObject go = new GameObject("NightMobSpawner");
+        DontDestroyOnLoad(go);
+        go.AddComponent<NightMobSpawner>();
+    }
 
     [Header("Spawn")]
     [Tooltip("Distância mínima do player para spawnar")]
@@ -47,13 +55,20 @@ public class NightMobSpawner : MonoBehaviour
     void Start()
     {
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-            player = playerObj.transform;
-        else
-            Debug.LogWarning("[NightMobSpawner] Player não encontrado. Certifica-te que o Player tem a tag 'Player'.");
+        if (playerObj != null) player = playerObj.transform;
 
         GameObject container = new GameObject("--- Mobs ---");
         mobContainer = container.transform;
+
+        if ((mob1Prefabs == null || mob1Prefabs.Length == 0) &&
+            (mob2Prefabs == null || mob2Prefabs.Length == 0))
+        {
+            mob1Prefabs = Resources.LoadAll<GameObject>("Mobs");
+            if (mob1Prefabs.Length == 0)
+                Debug.LogWarning("[NightMobSpawner] Nenhum prefab em Resources/Mobs/");
+            else if (debugLogs)
+                Debug.Log($"[NightMobSpawner] Carregados {mob1Prefabs.Length} prefabs de Resources/Mobs/");
+        }
     }
 
     void Update()

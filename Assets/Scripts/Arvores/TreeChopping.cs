@@ -33,6 +33,13 @@ public class TreeChopping : MonoBehaviour, IHitable
         health.OnDeath += Fall;
     }
 
+    public void Setup(GameObject troncoFolhasObj, GameObject bottomObj, GameObject woodPrefab = null)
+    {
+        troncoFolhas = troncoFolhasObj;
+        bottom = bottomObj;
+        woodItemPrefab = woodPrefab;
+    }
+
     public void TakeDamage(float damage)
     {
         if (hasFallen) return;

@@ -1,27 +1,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Spawna animais durante o dia. Despawna à noite.
-/// Requer DayNightCycle na cena.
-///
-/// Como usar:
-///   1. Cria um objeto vazio chamado "DayAnimalSpawner".
-///   2. Adiciona este componente.
-///   3. Arrasta os prefabs dos animais para animalPrefabs.
-/// </summary>
 public class DayAnimalSpawner : MonoBehaviour
 {
     [Header("Prefabs")]
+    [Tooltip("Se vazio, carrega automaticamente tudo em Resources/Animais/")]
     [SerializeField] private GameObject[] animalPrefabs;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void Bootstrap()
+    {
+        if (FindFirstObjectByType<DayAnimalSpawner>() != null) return;
+        GameObject go = new GameObject("DayAnimalSpawner");
+        DontDestroyOnLoad(go);
+        go.AddComponent<DayAnimalSpawner>();
+    }
+
     [Header("Limite")]
-    [SerializeField] private int maxAnimals = 5;
+    [SerializeField] private int maxAnimals = 30;
 
     [Header("Spawn")]
     [SerializeField] private float spawnMinDistance = 15f;
-    [SerializeField] private float spawnMaxDistance = 40f;
-    [SerializeField] private float spawnCooldown = 10f;
+    [SerializeField] private float spawnMaxDistance = 70f;
+    [SerializeField] private float spawnCooldown = 2f;
+    [Tooltip("Quantos animais tenta spawnar por ciclo")]
+    [SerializeField] private int spawnBatchSize = 4;
     [Tooltip("Altura mínima do terreno para spawnar (evita água)")]
     [SerializeField] private float minGroundHeight = 0.5f;
 
@@ -36,6 +39,15 @@ public class DayAnimalSpawner : MonoBehaviour
     void Start()
     {
         animalContainer = new GameObject("--- Animais ---").transform;
+
+        if (animalPrefabs == null || animalPrefabs.Length == 0)
+        {
+            animalPrefabs = Resources.LoadAll<GameObject>("Animais");
+            if (animalPrefabs.Length == 0)
+                Debug.LogWarning("[DayAnimalSpawner] Nenhum prefab encontrado em Resources/Animais/");
+            else if (debugLogs)
+                Debug.Log($"[DayAnimalSpawner] Carregados {animalPrefabs.Length} prefabs de Resources/Animais/");
+        }
     }
 
     void Update()
@@ -59,8 +71,11 @@ public class DayAnimalSpawner : MonoBehaviour
 
         if (activeAnimals.Count < maxAnimals && animalPrefabs != null && animalPrefabs.Length > 0)
         {
-            if (TrySpawn())
-                lastSpawnTime = Time.time;
+            int toSpawn = Mathf.Min(spawnBatchSize, maxAnimals - activeAnimals.Count);
+            bool anySpawned = false;
+            for (int i = 0; i < toSpawn; i++)
+                if (TrySpawn()) anySpawned = true;
+            if (anySpawned) lastSpawnTime = Time.time;
         }
     }
 
@@ -85,19 +100,19 @@ public class DayAnimalSpawner : MonoBehaviour
 
     private bool FindSpawnPosition(out Vector3 position)
     {
-        for (int i = 0; i < 15; i++)
+        for (int i = 0; i < 30; i++)
         {
             Vector2 rnd = Random.insideUnitCircle.normalized * Random.Range(spawnMinDistance, spawnMaxDistance);
             Vector3 candidate = player.position + new Vector3(rnd.x, 0f, rnd.y);
             candidate.y = player.position.y + 50f;
 
-            if (Physics.Raycast(candidate, Vector3.down, out RaycastHit hit, 200f, ~LayerMask.GetMask("Player")))
-            {
-                if (hit.point.y < minGroundHeight) continue;
-                if (HitIsOnTaggedObject(hit, "Tree")) continue;
-                position = hit.point + Vector3.up * 0.1f;
-                return true;
-            }
+            if (!Physics.Raycast(candidate, Vector3.down, out RaycastHit hit, 200f, ~LayerMask.GetMask("Player")))
+                continue;
+
+            if (hit.point.y < minGroundHeight) continue;
+
+            position = hit.point + Vector3.up * 0.1f;
+            return true;
         }
 
         position = Vector3.zero;

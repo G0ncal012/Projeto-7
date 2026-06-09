@@ -113,8 +113,9 @@ public class MainMenuUI : MonoBehaviour
 
         CreateTMP(settingsPanel.transform, "SettingsTitle", new Vector2(0f, 0.74f), new Vector2(1f, 0.94f),
                   "Configurações", 50f, cTitle, TextAlignmentOptions.Center);
-        CreateTMP(settingsPanel.transform, "SettingsPlaceholder", new Vector2(0f, 0.50f), new Vector2(1f, 0.66f),
-                  "Em breve...", 26f, new Color(cTitle.r, cTitle.g, cTitle.b, 0.6f), TextAlignmentOptions.Center);
+        CreateTMP(settingsPanel.transform, "VolumeLabel", new Vector2(0f, 0.58f), new Vector2(1f, 0.66f),
+                  "Volume da Música", 26f, cTitle, TextAlignmentOptions.Center);
+        CreateSlider(settingsPanel.transform, "VolumeSlider", 0.50f, AudioController.GetVolume(), AudioController.SetVolume);
         CreateButton(settingsPanel.transform, "BackButton", "Voltar", 0.28f, OnBackClicked);
 
         settingsPanel.SetActive(false);
@@ -196,6 +197,69 @@ public class MainMenuUI : MonoBehaviour
         tmp.alignment = align;
 
         return tmp;
+    }
+
+    private Slider CreateSlider(Transform parent, string goName, float anchorY, float initialValue01, UnityEngine.Events.UnityAction<float> onValueChanged)
+    {
+        GameObject go = new GameObject(goName);
+        go.transform.SetParent(parent, false);
+
+        RectTransform rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, anchorY);
+        rt.anchorMax = new Vector2(0.5f, anchorY);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(360f, 24f);
+        rt.anchoredPosition = Vector2.zero;
+
+        CreateImg(go.transform, "Background", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Color(cTitle.r, cTitle.g, cTitle.b, 0.18f));
+
+        GameObject fillArea = new GameObject("Fill Area");
+        fillArea.transform.SetParent(go.transform, false);
+        RectTransform fillAreaRt = fillArea.AddComponent<RectTransform>();
+        fillAreaRt.anchorMin = new Vector2(0f, 0f);
+        fillAreaRt.anchorMax = new Vector2(1f, 1f);
+        fillAreaRt.offsetMin = new Vector2(5f, 0f);
+        fillAreaRt.offsetMax = new Vector2(-5f, 0f);
+
+        GameObject fillObj = new GameObject("Fill");
+        fillObj.transform.SetParent(fillArea.transform, false);
+        RectTransform fillRt = fillObj.AddComponent<RectTransform>();
+        fillRt.anchorMin = new Vector2(0f, 0f);
+        fillRt.anchorMax = new Vector2(0f, 1f);
+        fillRt.offsetMin = Vector2.zero;
+        fillRt.offsetMax = Vector2.zero;
+        Image fillImg = fillObj.AddComponent<Image>();
+        fillImg.color = cButtonHover;
+
+        GameObject handleArea = new GameObject("Handle Slide Area");
+        handleArea.transform.SetParent(go.transform, false);
+        RectTransform handleAreaRt = handleArea.AddComponent<RectTransform>();
+        handleAreaRt.anchorMin = new Vector2(0f, 0f);
+        handleAreaRt.anchorMax = new Vector2(1f, 1f);
+        handleAreaRt.offsetMin = new Vector2(10f, 0f);
+        handleAreaRt.offsetMax = new Vector2(-10f, 0f);
+
+        GameObject handleObj = new GameObject("Handle");
+        handleObj.transform.SetParent(handleArea.transform, false);
+        RectTransform handleRt = handleObj.AddComponent<RectTransform>();
+        handleRt.anchorMin = new Vector2(0f, 0.5f);
+        handleRt.anchorMax = new Vector2(0f, 0.5f);
+        handleRt.pivot = new Vector2(0.5f, 0.5f);
+        handleRt.sizeDelta = new Vector2(20f, 28f);
+        Image handleImg = handleObj.AddComponent<Image>();
+        handleImg.color = cButton;
+
+        Slider slider = go.AddComponent<Slider>();
+        slider.direction = Slider.Direction.LeftToRight;
+        slider.minValue = 0f;
+        slider.maxValue = 1f;
+        slider.fillRect = fillRt;
+        slider.handleRect = handleRt;
+        slider.targetGraphic = handleImg;
+        slider.value = initialValue01;
+        slider.onValueChanged.AddListener(onValueChanged);
+
+        return slider;
     }
 
     // ── Pré-visualização do personagem (lado direito) ───────────────────────

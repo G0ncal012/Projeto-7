@@ -57,6 +57,9 @@ public class PlayerController : MonoBehaviour
 
         SetupCamera();
 
+        if (GetComponent<AxeTool>() == null) gameObject.AddComponent<AxeTool>();
+        if (GetComponent<PickaxeTool>() == null) gameObject.AddComponent<PickaxeTool>();
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
@@ -196,7 +199,7 @@ public class PlayerController : MonoBehaviour
         bool isGrounded = Physics.Raycast(
             transform.position + Vector3.up * 0.1f,
             Vector3.down,
-            col.height * transform.localScale.y * 0.7f,
+            0.25f,
             ~LayerMask.GetMask("Player")
         );
 

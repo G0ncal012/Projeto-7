@@ -66,6 +66,9 @@ public class MobAI : MonoBehaviour, IHitable
         spawnPoint = transform.position;
 
         health.OnDeath += Die;
+
+        if (GetComponent<EntityHealthBar>() == null)
+            gameObject.AddComponent<EntityHealthBar>();
     }
 
     void Start()
@@ -220,6 +223,12 @@ public class MobAI : MonoBehaviour, IHitable
         }
 
         Destroy(gameObject, 3f);
+    }
+
+    private void OnDestroy()
+    {
+        if (health != null)
+            health.OnDeath -= Die;
     }
 
     // ── Gizmos ────────────────────────────────────────────────────────────────

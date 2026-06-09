@@ -31,8 +31,6 @@ public class InventoryUI : MonoBehaviour
     private GameObject dragIcon = null;
     private Canvas canvas;
 
-    private AxeTool axeTool;
-    private PickaxeTool pickaxeTool;
     private BuildingManager buildingManager;
     private TextMeshProUGUI weightLabel;
 
@@ -50,8 +48,6 @@ public class InventoryUI : MonoBehaviour
         canvas = GetComponentInParent<Canvas>();
         if (canvas == null) canvas = FindAnyObjectByType<Canvas>();
 
-        axeTool = FindAnyObjectByType<AxeTool>();
-        pickaxeTool = FindAnyObjectByType<PickaxeTool>();
         buildingManager = FindAnyObjectByType<BuildingManager>();
 
         BuildHotbar();
@@ -72,9 +68,6 @@ public class InventoryUI : MonoBehaviour
 
     void Update()
     {
-        // Refs podem aparecer depois (player gerado em runtime)
-        if (axeTool == null) axeTool = FindAnyObjectByType<AxeTool>();
-        if (pickaxeTool == null) pickaxeTool = FindAnyObjectByType<PickaxeTool>();
         if (buildingManager == null) buildingManager = FindAnyObjectByType<BuildingManager>();
 
         // Abre/fecha inventário
@@ -125,9 +118,7 @@ public class InventoryUI : MonoBehaviour
         if (stack.quantity <= 0)
         {
             inv.hotbar[SelectedHotbarSlot] = null;
-            // Desativa construção se ficou sem items
             FindAnyObjectByType<BuildingManager>()?.DeactivateBuildMode();
-            FindAnyObjectByType<AxeTool>()?.SetAxeActive(false);
         }
         inv.NotifyChanged();
     }
@@ -138,14 +129,6 @@ public class InventoryUI : MonoBehaviour
 
         var stack = InventorySystem.Instance.hotbar[SelectedHotbarSlot];
         string itemName = stack != null ? stack.itemName : "";
-
-        // Machado
-        if (axeTool != null)
-            axeTool.SetAxeActive(itemName == "Machado");
-
-        // Picareta
-        if (pickaxeTool != null)
-            pickaxeTool.SetPickaxeActive(itemName == "Picareta");
 
         // Construção
         if (buildingManager != null)

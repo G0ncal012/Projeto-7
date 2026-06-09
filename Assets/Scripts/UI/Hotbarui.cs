@@ -186,29 +186,10 @@ public class HotbarUI : MonoBehaviour
         // por isso garantimos que a referência existe antes de usar.
         EnsureRefs();
 
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            axeActive = !axeActive;
-
-            if (axeActive)
-            {
-                buildingManager.DeactivateBuildMode();
-                if (axeTool != null) axeTool.SetAxeActive(true);
-                Refresh(-1, true);
-            }
-            else
-            {
-                if (axeTool != null) axeTool.SetAxeActive(false);
-                Refresh(buildingManager.GetSelectedHotbarIndex(), false);
-            }
-        }
     }
 
     private void OnBuildSlotChanged(int index)
     {
-        // Selecionar item de construção desativa o machado
-        axeActive = false;
-        if (axeTool != null) axeTool.SetAxeActive(false);
         Refresh(index, false);
     }
 

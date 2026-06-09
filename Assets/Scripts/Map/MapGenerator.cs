@@ -207,9 +207,12 @@ public class MapGenerator : MonoBehaviour
 
         int flatStep = Mathf.Max(4, footprintCells / 3);
 
+        Vector2Int bestCandidate = candidates[0];
+        float bestVariance = float.MaxValue;
+
         foreach (Vector2Int c in candidates)
         {
-            // 1. Verificar no noise map que toda a área do castelo é terreno válido (sem água/areia/rocha)
+            // 1. Verificar no noise map que toda a área do castelo é terreno válido
             bool areaValid = true;
             for (int dy = -footprintCells; dy <= footprintCells && areaValid; dy += 4)
             {
@@ -249,39 +252,61 @@ public class MapGenerator : MonoBehaviour
                 }
             }
 
-            if (samples == 0 || maxY - minY > castleMaxHeightVariance) continue;
+            if (samples == 0) continue;
 
-            // 3. Obter posição exata do centro
+            float variance = maxY - minY;
+            if (variance < bestVariance)
+            {
+                bestVariance = variance;
+                bestCandidate = c;
+            }
+
+            if (variance > castleMaxHeightVariance) continue;
+
+            // 3. Posição ideal — spawnar aqui
             if (!Physics.Raycast(new Vector3(worldX, 100f, worldZ), Vector3.down, out RaycastHit centerHit, 200f, terrainMask))
                 continue;
 
-            Vector3 spawnPos = new Vector3(worldX, centerHit.point.y, worldZ);
-            float yRot = (float)(rng.NextDouble() * 360.0);
-            GameObject castle = Instantiate(castlePrefab, spawnPos, Quaternion.Euler(0f, yRot, 0f));
-            castle.name = "Castle";
-
-            // Corrigir Y: garantir que a base visual do castelo assenta no terreno,
-            // independentemente de onde o pivot do prefab está no modelo.
-            Renderer[] castleRenderers = castle.GetComponentsInChildren<Renderer>();
-            if (castleRenderers.Length > 0)
-            {
-                Bounds totalBounds = castleRenderers[0].bounds;
-                for (int i = 1; i < castleRenderers.Length; i++)
-                    totalBounds.Encapsulate(castleRenderers[i].bounds);
-                // bottomLift = distância entre o pivot e o ponto mais baixo do modelo
-                float bottomLift = castle.transform.position.y - totalBounds.min.y;
-                // Encaixar ligeiramente no terreno para parecer mais natural
-                castle.transform.position = new Vector3(spawnPos.x, spawnPos.y + bottomLift - 1.5f, spawnPos.z);
-                spawnPos = castle.transform.position;
-            }
-
-            castlePosition = spawnPos;
-            castleSpawned = true;
-            Debug.Log($"[CastleSpawn] Castelo colocado em {spawnPos} (bounds ajustados)");
+            PlaceCastle(castlePrefab, worldX, worldZ, centerHit.point.y, rng);
             return;
         }
 
+        // Fallback garantido: usa o candidato mais plano encontrado
+        {
+            float wx = bestCandidate.x - mapWidth / 2f;
+            float wz = -(bestCandidate.y - mapHeight / 2f);
+            if (Physics.Raycast(new Vector3(wx, 100f, wz), Vector3.down, out RaycastHit fallbackHit, 200f, terrainMask))
+            {
+                Debug.LogWarning($"[CastleSpawn] Fallback usado (variância={bestVariance:F2}). Castelo colocado na melhor posição disponível.");
+                PlaceCastle(castlePrefab, wx, wz, fallbackHit.point.y, rng);
+                return;
+            }
+        }
+
         Debug.LogWarning("[CastleSpawn] Não foi encontrada posição válida para o castelo.");
+    }
+
+    void PlaceCastle(GameObject prefab, float worldX, float worldZ, float groundY, System.Random rng)
+    {
+        float yRot = (float)(rng.NextDouble() * 360.0);
+        Vector3 spawnPos = new Vector3(worldX, groundY, worldZ);
+        GameObject castle = Instantiate(prefab, spawnPos, Quaternion.Euler(0f, yRot, 0f));
+        castle.name = "Castle";
+
+        Renderer[] castleRenderers = castle.GetComponentsInChildren<Renderer>();
+        if (castleRenderers.Length > 0)
+        {
+            Bounds totalBounds = castleRenderers[0].bounds;
+            for (int i = 1; i < castleRenderers.Length; i++)
+                totalBounds.Encapsulate(castleRenderers[i].bounds);
+            float bottomLift = castle.transform.position.y - totalBounds.min.y;
+            castle.transform.position = new Vector3(spawnPos.x, spawnPos.y + bottomLift, spawnPos.z);
+            spawnPos = castle.transform.position;
+        }
+
+        castlePosition = spawnPos;
+        castleSpawned = true;
+        Debug.Log($"[CastleSpawn] Castelo colocado em {spawnPos}");
     }
 
     bool IsInCastleExclusionZone(float worldX, float worldZ)
@@ -360,6 +385,14 @@ public class MapGenerator : MonoBehaviour
 
     if (player.GetComponent<HungerSystem>() == null)
         player.AddComponent<HungerSystem>();
+
+    if (player.GetComponent<AxeTool>() == null)
+        player.AddComponent<AxeTool>();
+
+    PickaxeTool pick = player.GetComponent<PickaxeTool>();
+    if (pick == null)
+        pick = player.AddComponent<PickaxeTool>();
+    pick.SetPickaxeActive(true);
 }
 
     void SpawnWater()
@@ -444,7 +477,6 @@ public class MapGenerator : MonoBehaviour
 
     void FixTreeColliders(GameObject tree)
     {
-        
         Transform troncoFolhas = tree.transform.Find("TroncoFolhas");
         if (troncoFolhas != null)
             foreach (Collider col in troncoFolhas.GetComponentsInChildren<Collider>(true))
@@ -452,10 +484,20 @@ public class MapGenerator : MonoBehaviour
 
         // Cápsula vertical no root — representa apenas o tronco físico
         CapsuleCollider trunk = tree.AddComponent<CapsuleCollider>();
-        trunk.direction = 1;                          // eixo Y (vertical)
-        trunk.radius    = 0.3f;                       // ~30 cm de raio
-        trunk.height    = 4.0f;                       // 4 m de altura de tronco
-        trunk.center    = new Vector3(0f, 2f, 0f);    // centrado a 2 m do chão
+        trunk.direction = 1;
+        trunk.radius    = 0.3f;
+        trunk.height    = 4.0f;
+        trunk.center    = new Vector3(0f, 2f, 0f);
+
+        // Garante que a árvore tem TreeChopping para poder ser cortada pelo machado
+        if (tree.GetComponent<TreeChopping>() == null)
+        {
+            if (tree.GetComponent<Health>() == null)
+                tree.AddComponent<Health>();
+            TreeChopping tc = tree.AddComponent<TreeChopping>();
+            Transform bot = tree.transform.Find("Bottom");
+            tc.Setup(troncoFolhas?.gameObject, bot?.gameObject);
+        }
     }
 
     void SpawnRocks(float[,] noiseMap)
@@ -515,6 +557,12 @@ public class MapGenerator : MonoBehaviour
 
                         rock.transform.localScale = Vector3.one * scale;
 
+                        SphereCollider sc = rock.AddComponent<SphereCollider>();
+                        sc.center = Vector3.zero;
+                        sc.radius = 0.5f;
+
+                        if (rock.GetComponent<Health>() == null)
+                            rock.AddComponent<Health>();
                         RockBreaking rockBreaking = rock.AddComponent<RockBreaking>();
                         if (rockDropPrefab != null)
                             rockBreaking.Setup(rockDropPrefab);

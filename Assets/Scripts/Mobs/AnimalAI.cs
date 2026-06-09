@@ -60,6 +60,9 @@ public class AnimalAI : MonoBehaviour, IHitable
         rb.freezeRotation = true;
         animator = GetComponentInChildren<Animator>();
         health.OnDeath += Die;
+
+        if (GetComponent<EntityHealthBar>() == null)
+            gameObject.AddComponent<EntityHealthBar>();
     }
 
     void Start()

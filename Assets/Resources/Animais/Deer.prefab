@@ -22,15 +22,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 482888bb02aae5f4e8e48c53d43fe7b3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.89877
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 482888bb02aae5f4e8e48c53d43fe7b3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.81055
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 482888bb02aae5f4e8e48c53d43fe7b3, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -3.12037
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 482888bb02aae5f4e8e48c53d43fe7b3, type: 3}
       propertyPath: m_LocalRotation.w
@@ -105,7 +105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac30b26b8eec3074a9880ded8ed7cd43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
-  maxHP: 1
+  maxHP: 60
 --- !u!54 &846143421453157191
 Rigidbody:
   m_ObjectHideFlags: 0

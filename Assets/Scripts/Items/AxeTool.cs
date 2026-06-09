@@ -3,22 +3,22 @@ using UnityEngine;
 public class AxeTool : MonoBehaviour
 {
     [Header("Configurações")]
-    [SerializeField] private float destroyRange = 5f;
+    [SerializeField] private float destroyRange = 4f;
     [SerializeField] private float hitCooldown = 0.35f;
     [SerializeField] private float damagePerHit = 34f;
+    [SerializeField] private float rockDamagePerHit = 25f;
     [SerializeField] private string buildablesTag = "Buildables";
     [SerializeField] private string treeTag = "Tree";
     [SerializeField] private string mobTag = "Mob";
     [SerializeField] private string animalTag = "Animal";
     [SerializeField] private LayerMask raycastMask = ~0;
-    [SerializeField] private bool debugLogs = false;
+    [SerializeField] private bool debugLogs = true;
     [SerializeField] private bool startActiveForTesting = false;
     [SerializeField] private KeyCode destroyKey = KeyCode.B;
 
     [Header("Highlight — opcional")]
     [SerializeField] private Color highlightColor = new Color(1f, 0.25f, 0.1f, 0.7f);
 
-    private bool isActive = false;
     private float lastHitTime = -999f;
     private Camera cam;
     private float nextHeartbeatLogTime = 0f;
@@ -34,7 +34,7 @@ public class AxeTool : MonoBehaviour
 
     private void Start()
     {
-        cam = FindAnyObjectByType<Camera>();
+        cam = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
         buildingManager = FindAnyObjectByType<BuildingManager>();
 
         buildablesTagValid = IsTagDefined(buildablesTag);
@@ -42,27 +42,23 @@ public class AxeTool : MonoBehaviour
         mobTagValid = IsTagDefined(mobTag);
         animalTagValid = IsTagDefined(animalTag);
         if (debugLogs)
-            Debug.Log($"[AxeTool] Tag valid? {buildablesTag}={buildablesTagValid}, {treeTag}={treeTagValid}");
+            Debug.Log($"[AxeTool] Start. Tags: {buildablesTag}={buildablesTagValid}, {treeTag}={treeTagValid}, {mobTag}={mobTagValid}");
+    }
 
-        if (startActiveForTesting)
-        {
-            isActive = true;
-            if (debugLogs) Debug.Log($"[AxeTool] startActiveForTesting -> Active={isActive} (on {name})");
-        }
+    private bool IsEquippedItemBlocked()
+    {
+        if (InventorySystem.Instance == null) return false;
+        var stack = InventorySystem.Instance.hotbar[InventoryUI.SelectedHotbarSlot];
+        string item = stack != null ? stack.itemName : "";
+        return item == "Picareta" || item == "Floor" || item == "Wall";
     }
 
     private void Update()
     {
-        if (cam == null) cam = FindAnyObjectByType<Camera>();
+        if (cam == null) cam = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
         if (buildingManager == null) buildingManager = FindAnyObjectByType<BuildingManager>();
 
-        if (startActiveForTesting && !isActive)
-        {
-            isActive = true;
-            Debug.Log($"[AxeTool] startActiveForTesting keeps Active=True (on {name})");
-        }
-
-        if (!isActive)
+        if (IsEquippedItemBlocked())
         {
             ClearHighlight();
             return;
@@ -104,12 +100,7 @@ public class AxeTool : MonoBehaviour
         }
     }
 
-    public void SetAxeActive(bool active)
-    {
-        isActive = active;
-        if (debugLogs) Debug.Log($"[AxeTool] Active={isActive} (on {name})");
-        if (!active) ClearHighlight();
-    }
+    public void SetAxeActive(bool active) { } // mantido por compatibilidade — activação gerida internamente
 
     private void TryHit(GameObject target)
     {
@@ -124,8 +115,9 @@ public class AxeTool : MonoBehaviour
 
         if (hitable != null)
         {
-            if (debugLogs) Debug.Log($"[AxeTool] IHitable encontrado em: {target.name}");
-            hitable.TakeDamage(damagePerHit);
+            float dmg = hitable is RockBreaking ? rockDamagePerHit : damagePerHit;
+            if (debugLogs) Debug.Log($"[AxeTool] IHitable encontrado em: {target.name}, dano={dmg}");
+            hitable.TakeDamage(dmg);
             return;
         }
 
@@ -162,6 +154,8 @@ public class AxeTool : MonoBehaviour
 
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
+        int terrainLayer = LayerMask.NameToLayer("Terrain");
+
         if (log)
         {
             string msg = "[AxeTool] Hits (nearest->furthest):\n";
@@ -178,6 +172,7 @@ public class AxeTool : MonoBehaviour
         {
             Transform t = hits[i].collider != null ? hits[i].collider.transform : null;
             if (t == null) continue;
+            if (terrainLayer >= 0 && hits[i].collider.gameObject.layer == terrainLayer) continue;
 
             GameObject candidate = null;
             if (buildablesTagValid) candidate = FindTaggedInParents(t, buildablesTag);
@@ -185,12 +180,12 @@ public class AxeTool : MonoBehaviour
             if (candidate == null && mobTagValid) candidate = FindTaggedInParents(t, mobTag);
             if (candidate == null && animalTagValid) candidate = FindTaggedInParents(t, animalTag);
 
-            // Fallback: mobs/animais com IHitable — exclui RockBreaking (só picareta parte pedra)
+            // Fallback: qualquer IHitable excepto pedras (árvores, mobs, boss)
             if (candidate == null)
             {
                 IHitable hitable = hits[i].collider.GetComponentInParent<IHitable>();
                 if (hitable == null) hitable = hits[i].collider.GetComponentInChildren<IHitable>();
-                if (hitable != null && !(hitable is RockBreaking) && !(hitable is TreeChopping))
+                if (hitable != null && hitable is not RockBreaking)
                     candidate = (hitable as MonoBehaviour)?.gameObject;
             }
 
