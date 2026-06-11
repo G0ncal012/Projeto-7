@@ -14,13 +14,21 @@ public class FoodPickup : MonoBehaviour
 
     private GameObject promptUI;
     private TextMeshProUGUI promptText;
+    private Camera cam;
 
     void Start() => CreatePromptUI();
 
     void Update()
     {
-        Camera cam = Camera.main;
+        if (cam == null) cam = Camera.main; // cache: Camera.main é uma procura por tag, caro por frame
         if (cam == null) return;
+
+        // Corte por distância — não vale a pena raycast se a comida está longe da câmara.
+        if ((transform.position - cam.transform.position).sqrMagnitude > pickupRange * pickupRange)
+        {
+            HidePrompt();
+            return;
+        }
 
         Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         bool lookingAt = Physics.Raycast(ray, out RaycastHit hit, pickupRange)

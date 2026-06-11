@@ -150,6 +150,9 @@ public class NightMobSpawner : MonoBehaviour
         return false;
     }
 
+    /// <summary>Destrói todos os mobs noturnos ativos. Chamado pelo PlayerRespawn ao renascer.</summary>
+    public void ResetMobs() => DestroyAllMobs();
+
     private void DestroyAllMobs()
     {
         foreach (var m in activeMob1)

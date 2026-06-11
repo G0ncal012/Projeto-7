@@ -13,8 +13,10 @@ public class PlayerController : MonoBehaviour
     public float waterDrag = 3f;
     public float waterLevel = 0.15f;
 
-    [Header("Look")]
-    public float mouseSensitivity = 2f;
+    private const string SensitivityPrefKey = "MouseSensitivity";
+    public const float MinSensitivity = 0.5f;
+    public const float MaxSensitivity = 5f;
+    private const float DefaultSensitivity = 2f;
 
     private Rigidbody rb;
     private Camera cam;
@@ -53,12 +55,22 @@ public class PlayerController : MonoBehaviour
         {
             animator.gameObject.SetActive(true);
             animator.enabled = true;
+
+            AlignFeetToGround(animator);
         }
 
-        SetupCamera();
+        SetupCamera(animator);
 
         if (GetComponent<AxeTool>() == null) gameObject.AddComponent<AxeTool>();
         if (GetComponent<PickaxeTool>() == null) gameObject.AddComponent<PickaxeTool>();
+
+        Health health = GetComponent<Health>();
+        if (health == null) health = gameObject.AddComponent<Health>();
+        health.SetMaxHP(100f, refillHP: true);
+
+        if (GetComponent<PlayerRespawn>() == null) gameObject.AddComponent<PlayerRespawn>();
+        if (GetComponent<HungerSystem>() == null) gameObject.AddComponent<HungerSystem>();
+        if (GetComponent<FoodConsumption>() == null) gameObject.AddComponent<FoodConsumption>();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -66,7 +78,31 @@ public class PlayerController : MonoBehaviour
         Debug.Log("PlayerController ativo e PlayerCamera criada/ativada");
     }
 
-    void SetupCamera()
+    /// <summary>
+    /// Desloca o modelo (filho com o Animator) verticalmente para que o ponto mais baixo
+    /// do seu mesh fique alinhado com a base do CapsuleCollider (pés no chão, não debaixo dele).
+    /// </summary>
+    void AlignFeetToGround(Animator animator)
+    {
+        if (animator.transform == transform) return;
+
+        Renderer[] renderers = animator.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return;
+
+        Bounds bounds = renderers[0].bounds;
+        foreach (Renderer r in renderers)
+            bounds.Encapsulate(r.bounds);
+
+        if (transform.lossyScale.y == 0f) return;
+
+        float worldOffset = transform.position.y - bounds.min.y;
+
+        Vector3 modelLocalPos = animator.transform.localPosition;
+        modelLocalPos.y += worldOffset / transform.lossyScale.y;
+        animator.transform.localPosition = modelLocalPos;
+    }
+
+    void SetupCamera(Animator animator)
     {
         Transform existingCam = transform.Find("PlayerCamera");
         GameObject camObj;
@@ -82,7 +118,18 @@ public class PlayerController : MonoBehaviour
         }
 
         camObj.SetActive(true);
-        camObj.transform.localPosition = new Vector3(0f, 1.25f, 0.15f);
+
+        // Posiciona a câmara à frente da cabeça (em vez de dentro do crânio),
+        // calculado a partir do osso da cabeça do Avatar Humanoid.
+        Vector3 camLocalPos = new Vector3(0f, 1.25f, 0.15f);
+        Transform head = animator != null ? animator.GetBoneTransform(HumanBodyBones.Head) : null;
+        if (head != null)
+        {
+            Vector3 headLocal = transform.InverseTransformPoint(head.position);
+            camLocalPos = headLocal + new Vector3(0f, 0f, 0.25f);
+        }
+
+        camObj.transform.localPosition = camLocalPos;
         camObj.transform.localRotation = Quaternion.identity;
         camObj.tag = "MainCamera";
 
@@ -92,6 +139,7 @@ public class PlayerController : MonoBehaviour
             cam = camObj.AddComponent<Camera>();
 
         cam.enabled = true;
+        cam.nearClipPlane = 0.03f;
 
         AudioListener listener = camObj.GetComponent<AudioListener>();
 
@@ -181,8 +229,9 @@ public class PlayerController : MonoBehaviour
     {
         if (cam == null) return;
 
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+        float sensitivity = GetSensitivity();
+        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
         transform.Rotate(Vector3.up * mouseX);
 
@@ -254,5 +303,15 @@ public class PlayerController : MonoBehaviour
             underwaterOverlay.SetActive(false);
             RenderSettings.fog = false;
         }
+    }
+
+    /// <summary>Sensibilidade guardada (0.5–5), usada para inicializar sliders nos menus.</summary>
+    public static float GetSensitivity() => PlayerPrefs.GetFloat(SensitivityPrefKey, DefaultSensitivity);
+
+    /// <summary>Aplica e guarda uma nova sensibilidade do rato.</summary>
+    public static void SetSensitivity(float value)
+    {
+        value = Mathf.Clamp(value, MinSensitivity, MaxSensitivity);
+        PlayerPrefs.SetFloat(SensitivityPrefKey, value);
     }
 }

@@ -148,6 +148,8 @@ public class MapGenerator : MonoBehaviour
                     Rigidbody rb = playerObj.GetComponent<Rigidbody>();
                     if (rb != null) rb.linearVelocity = Vector3.zero;
 
+                    playerObj.GetComponent<PlayerRespawn>()?.UpdateSpawnPoint();
+
                     Debug.Log($"[PlayerSpawn] Jogador movido para relva em {playerObj.transform.position}");
                     return;
                 }
@@ -669,6 +671,7 @@ public class MapGenerator : MonoBehaviour
                     grass.transform.SetParent(container.transform);
                     grass.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.4f + 0.6f);
                     foreach (Collider c in grass.GetComponentsInChildren<Collider>()) Destroy(c);
+                    DisableShadows(grass);
                 }
             }
         }
@@ -702,8 +705,25 @@ public class MapGenerator : MonoBehaviour
                     flower.transform.SetParent(container.transform);
                     flower.transform.localScale = Vector3.one * (float)(rng.NextDouble() * 0.3f + 0.7f);
                     foreach (Collider c in flower.GetComponentsInChildren<Collider>()) Destroy(c);
+                    DisableShadows(flower);
                 }
             }
+        }
+
+        // A vegetação (ervas/flores) são milhares de objetos decorativos que nunca se mexem.
+        // Combinar em batches estáticos reduz drasticamente os draw calls — sem mudar o visual.
+        // (Só é seguro porque estes objetos não se movem nem são destruídos individualmente.)
+        StaticBatchingUtility.Combine(container);
+    }
+
+    // Desliga sombras nos renderers — vegetação pequena não precisa de projetar/receber sombras
+    // e isso é um dos maiores custos de GPU quando há milhares de objetos no ecrã.
+    static void DisableShadows(GameObject go)
+    {
+        foreach (Renderer r in go.GetComponentsInChildren<Renderer>(true))
+        {
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
         }
     }
 

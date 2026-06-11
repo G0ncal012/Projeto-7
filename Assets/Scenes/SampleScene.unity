@@ -171,6 +171,7 @@ MonoBehaviour:
   spawnMinDistance: 15
   spawnMaxDistance: 40
   spawnCooldown: 10
+  spawnBatchSize: 4
   minGroundHeight: 0.5
   debugLogs: 0
 --- !u!1 &368557355
@@ -1129,6 +1130,14 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8472916354128765432, guid: 015962befdbdb4ce296280ee637e1054, type: 3}
+      propertyPath: tools.Array.data[0].modelPrefab
+      value: 
+      objectReference: {fileID: 1624527751360145316, guid: 2d9b161f1cbef6641b4edfc927ef4428, type: 3}
+    - target: {fileID: 8472916354128765432, guid: 015962befdbdb4ce296280ee637e1054, type: 3}
+      propertyPath: tools.Array.data[1].modelPrefab
+      value: 
+      objectReference: {fileID: 3832460361532638315, guid: 58878185772716c4bbdeb5de7733989d, type: 3}
     - target: {fileID: 9159094217911510572, guid: 015962befdbdb4ce296280ee637e1054, type: 3}
       propertyPath: m_Name
       value: Player
@@ -1262,7 +1271,6 @@ GameObject:
   - component: {fileID: 2038726566}
   - component: {fileID: 2038726567}
   - component: {fileID: 2038726571}
-  - component: {fileID: 2038726570}
   - component: {fileID: 2038726569}
   - component: {fileID: 2038726568}
   - component: {fileID: 2038726572}
@@ -1334,23 +1342,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryUI
   toggleKey: 9
---- !u!114 &2038726570
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2038726565}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 815c2fe01f8216440a3415a89568df2b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AxeHit
-  hitRange: 3
-  damagePerHit: 34
-  hitLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!114 &2038726571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1366,6 +1357,7 @@ MonoBehaviour:
   destroyRange: 5
   hitCooldown: 0.35
   damagePerHit: 34
+  rockDamagePerHit: 25
   buildablesTag: Buildables
   treeTag: Tree
   mobTag: Mob
@@ -1395,6 +1387,7 @@ MonoBehaviour:
   raycastMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  debugLogs: 0
   highlightColor: {r: 0.3, g: 0.6, b: 1, a: 0.7}
 --- !u!1 &2105843097
 GameObject:

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4266512758237049267}
   - component: {fileID: 794254743242342459}
   - component: {fileID: 1015537294913288210}
+  - component: {fileID: 8472916354128765432}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -105,6 +106,31 @@ MonoBehaviour:
   waterDrag: 3
   waterLevel: 0.15
   mouseSensitivity: 2
+--- !u!114 &8472916354128765432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9159094217911510572}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b6bf151373c5464d836fc3b871bc73c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  tools:
+  - itemName: Machado
+    modelPrefab: {fileID: 100100000, guid: 2d9b161f1cbef6641b4edfc927ef4428, type: 3}
+    targetWorldSize: 0.5
+    positionOffset: {x: 0, y: 0.2, z: 0}
+    rotationOffset: {x: -90, y: 180, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+  - itemName: Picareta
+    modelPrefab: {fileID: 100100000, guid: 58878185772716c4bbdeb5de7733989d, type: 3}
+    targetWorldSize: 0.5
+    positionOffset: {x: 0, y: 0.1, z: 0}
+    rotationOffset: {x: 0, y: 180, z: 0}
+    scale: {x: 1, y: 1, z: 1}
 --- !u!1001 &722362242998124379
 PrefabInstance:
   m_ObjectHideFlags: 0

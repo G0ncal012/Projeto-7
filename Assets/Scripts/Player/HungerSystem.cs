@@ -15,17 +15,17 @@ public class HungerSystem : MonoBehaviour
     [Header("Fome")]
     [SerializeField] private float maxHunger = 100f;
     [Tooltip("Fome consumida por segundo base")]
-    [SerializeField] private float baseDecayRate = 1f;
+    [SerializeField] private float baseDecayRate = 0.25f;
     [Tooltip("Fome extra por segundo por cada kg no inventário")]
-    [SerializeField] private float weightDecayMultiplier = 0.05f;
+    [SerializeField] private float weightDecayMultiplier = 0.015f;
 
     [Header("Ações")]
     [Tooltip("Fome consumida por cada golpe")]
-    [SerializeField] private float hungerPerHit = 2f;
+    [SerializeField] private float hungerPerHit = 1f;
 
     [Header("Starvação")]
     [Tooltip("Dano por segundo quando fome = 0")]
-    [SerializeField] private float starvationDamagePerSecond = 5f;
+    [SerializeField] private float starvationDamagePerSecond = 3f;
 
     private float currentHunger;
     private Health health;
@@ -63,7 +63,6 @@ public class HungerSystem : MonoBehaviour
     {
         currentHunger = Mathf.Min(maxHunger, currentHunger + amount);
         OnHungerChanged?.Invoke(currentHunger, maxHunger);
-        Debug.Log($"[HungerSystem] Comeu. Fome: {currentHunger:F0}/{maxHunger:F0}");
     }
 
     public void ResetHunger()

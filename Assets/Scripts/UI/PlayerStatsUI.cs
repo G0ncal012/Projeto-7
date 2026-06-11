@@ -96,24 +96,33 @@ public class PlayerStatsUI : MonoBehaviour
 
     private void Update()
     {
-        if (playerHealth != null) return;
+        if (playerHealth == null)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p == null) return;
 
-        GameObject p = GameObject.FindGameObjectWithTag("Player");
-        if (p == null) return;
+            playerHealth = p.GetComponent<Health>();
+            if (playerHealth != null)
+            {
+                playerHealth.OnDamaged += OnHealthChanged;
+                OnHealthChanged(playerHealth.CurrentHP, playerHealth.MaxHP);
+            }
 
-        playerHealth = p.GetComponent<Health>();
+            playerHunger = p.GetComponent<HungerSystem>();
+            if (playerHunger != null)
+            {
+                playerHunger.OnHungerChanged += OnHungerChanged;
+                OnHungerChanged(playerHunger.CurrentHunger, playerHunger.MaxHunger);
+            }
+        }
+
+        // Sincroniza sempre os valores atuais, garantindo que a barra
+        // reflete o HP/Fome reais mesmo que algum evento se perca.
         if (playerHealth != null)
-        {
-            playerHealth.OnDamaged += OnHealthChanged;
             OnHealthChanged(playerHealth.CurrentHP, playerHealth.MaxHP);
-        }
 
-        playerHunger = p.GetComponent<HungerSystem>();
         if (playerHunger != null)
-        {
-            playerHunger.OnHungerChanged += OnHungerChanged;
             OnHungerChanged(playerHunger.CurrentHunger, playerHunger.MaxHunger);
-        }
     }
 
     private void OnHealthChanged(float current, float max)

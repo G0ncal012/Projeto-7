@@ -252,6 +252,24 @@ public class CastleArena : MonoBehaviour
         bossObj.AddComponent<BossAI>();
     }
 
+    /// <summary>Remove a barreira, destrói o boss ativo e repõe a arena. Chamado pelo PlayerRespawn ao renascer.</summary>
+    public void ResetArena()
+    {
+        BossAI.OnBossDied -= OnBossDefeated;
+
+        if (BossAI.ActiveBoss != null)
+            Destroy(BossAI.ActiveBoss.gameObject);
+
+        if (barrierVisual != null) barrierVisual.SetActive(false);
+
+        if (wallColliders != null)
+            foreach (var bc in wallColliders)
+                if (bc != null) bc.enabled = false;
+
+        playerInArena = false;
+        Debug.Log("[CastleArena] Arena reposta após renascimento.");
+    }
+
     private void OnBossDefeated()
     {
         BossAI.OnBossDied -= OnBossDefeated;

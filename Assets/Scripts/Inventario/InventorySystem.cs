@@ -86,6 +86,41 @@ public class InventorySystem : MonoBehaviour
         return false;
     }
 
+    /// <summary>Quantidade total de um item na hotbar + inventário.</summary>
+    public int CountItem(string itemName)
+    {
+        int count = 0;
+        foreach (var s in hotbar)
+            if (s != null && s.itemName == itemName) count += s.quantity;
+        foreach (var s in inventory)
+            if (s != null && s.itemName == itemName) count += s.quantity;
+        return count;
+    }
+
+    /// <summary>Remove até 'quantity' unidades de um item. Devolve true se removeu tudo.</summary>
+    public bool RemoveItem(string itemName, int quantity)
+    {
+        int remaining = quantity;
+        RemoveFrom(hotbar, itemName, ref remaining);
+        RemoveFrom(inventory, itemName, ref remaining);
+        NotifyChanged();
+        return remaining <= 0;
+    }
+
+    private static void RemoveFrom(ItemStack[] slots, string name, ref int remaining)
+    {
+        for (int i = 0; i < slots.Length && remaining > 0; i++)
+        {
+            if (slots[i] != null && slots[i].itemName == name)
+            {
+                int take = Mathf.Min(remaining, slots[i].quantity);
+                slots[i].quantity -= take;
+                remaining -= take;
+                if (slots[i].quantity <= 0) slots[i] = null;
+            }
+        }
+    }
+
     private bool TryStack(ItemStack[] slots, string name, int qty)
     {
         for (int i = 0; i < slots.Length; i++)

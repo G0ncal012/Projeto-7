@@ -168,6 +168,8 @@ public class BossAI : MonoBehaviour, IHitable
                 if (Time.time >= lastAttackTime + Cooldown)
                 {
                     lastAttackTime = Time.time;
+                    PlayerRespawn respawn = player.GetComponent<PlayerRespawn>();
+                    if (respawn != null && respawn.IsInvincible) break;
                     player.GetComponent<Health>()?.TakeDamage(Damage);
                     if (animator != null) animator.SetTrigger("Attack");
                     Debug.Log($"[Boss] Atacou player por {Damage}.");

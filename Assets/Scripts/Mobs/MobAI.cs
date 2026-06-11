@@ -44,6 +44,9 @@ public class MobAI : MonoBehaviour, IHitable
     [Tooltip("Quantidade de cada drop")]
     [SerializeField] private int dropAmount = 1;
 
+    [Header("Debug")]
+    [SerializeField] private bool debugLogs = true;
+
     // ── Estado interno ────────────────────────────────────────────────────────
     private enum State { Idle, Patrol, Chase, Attack, Dead }
     private State state = State.Idle;
@@ -56,6 +59,7 @@ public class MobAI : MonoBehaviour, IHitable
     private Vector3 patrolTarget;
     private float idleTimer = 0f;
     private float lastAttackTime = -999f;
+    private float nextHeartbeatLogTime = 0f;
 
     // ── Unity ─────────────────────────────────────────────────────────────────
     void Awake()
@@ -106,6 +110,12 @@ public class MobAI : MonoBehaviour, IHitable
     private void UpdateState()
     {
         float distToPlayer = player != null ? Vector3.Distance(transform.position, player.position) : float.MaxValue;
+
+        if (debugLogs && Time.time >= nextHeartbeatLogTime)
+        {
+            nextHeartbeatLogTime = Time.time + 1f;
+            Debug.Log($"[MobAI] {name} state={state} dist={distToPlayer:F2} attackRange={attackRange} player={(player != null)}");
+        }
 
         switch (state)
         {
@@ -167,14 +177,29 @@ public class MobAI : MonoBehaviour, IHitable
         if (Time.time < lastAttackTime + attackCooldown) return;
         lastAttackTime = Time.time;
 
-        if (player == null) return;
+        if (player == null)
+        {
+            if (debugLogs) Debug.Log($"[MobAI] {name} TryAttack: player é NULL.");
+            return;
+        }
+
+        PlayerRespawn respawn = player.GetComponent<PlayerRespawn>();
+        if (respawn != null && respawn.IsInvincible)
+        {
+            if (debugLogs) Debug.Log($"[MobAI] {name} TryAttack: player invencível, sem dano.");
+            return;
+        }
 
         // Aplica dano ao player se ele tiver o componente Health
         Health playerHealth = player.GetComponent<Health>();
-        if (playerHealth != null)
-            playerHealth.TakeDamage(damage);
+        if (playerHealth == null)
+        {
+            if (debugLogs) Debug.Log($"[MobAI] {name} TryAttack: player não tem Health!");
+            return;
+        }
 
-        Debug.Log($"[MobAI] {name} atacou o player por {damage} de dano.");
+        playerHealth.TakeDamage(damage);
+        Debug.Log($"[MobAI] {name} atacou o player por {damage} de dano. HP player: {playerHealth.CurrentHP:F0}/{playerHealth.MaxHP:F0}");
     }
 
     private void MoveTowards(Vector3 target, float speed)

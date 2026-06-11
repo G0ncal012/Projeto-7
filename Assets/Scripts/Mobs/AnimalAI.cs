@@ -116,7 +116,6 @@ public class AnimalAI : MonoBehaviour, IHitable
     {
         if (state == State.Dead) return;
         health.TakeDamage(damage);
-        Debug.Log($"[AnimalAI] {name} recebeu {damage} dano. Vida: {health.CurrentHP:F0}/{health.MaxHP:F0}");
 
         if (canAttack)
         {
@@ -179,10 +178,11 @@ public class AnimalAI : MonoBehaviour, IHitable
                 if (Time.time >= lastAttackTime + attackCooldown)
                 {
                     lastAttackTime = Time.time;
+                    PlayerRespawn respawn = player?.GetComponent<PlayerRespawn>();
+                    if (respawn != null && respawn.IsInvincible) break;
                     Health playerHealth = player?.GetComponent<Health>();
                     playerHealth?.TakeDamage(attackDamage);
                     if (animator != null) animator.SetTrigger(animAttack);
-                    Debug.Log($"[AnimalAI] {name} atacou o player por {attackDamage}.");
                 }
                 break;
         }

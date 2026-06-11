@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 /// <summary>
@@ -20,12 +21,29 @@ public class PauseMenuUI : MonoBehaviour
     private GameObject canvasObj;
     private GameObject pausePanel;
     private GameObject settingsPanel;
+    private Slider volumeSlider;
+    private Slider sensitivitySlider;
     private bool isPaused = false;
 
     private PlayerController playerController;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
+    {
+        // RuntimeInitializeOnLoadMethod só corre uma vez no arranque da app — recriar
+        // manualmente sempre que a cena recarrega (ex: voltar ao Menu Principal).
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
+        CreateMenu();
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        CreateMenu();
+    }
+
+    private static void CreateMenu()
     {
         if (FindFirstObjectByType<PauseMenuUI>() != null) return;
 
@@ -40,7 +58,7 @@ public class PauseMenuUI : MonoBehaviour
 
     private void Update()
     {
-        if (MainMenuUI.IsMainMenuOpen || InventoryUI.IsOpen) return;
+        if (MainMenuUI.IsMainMenuOpen || InventoryUI.IsOpen || DeathMenuUI.IsDeathMenuOpen) return;
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -128,8 +146,13 @@ public class PauseMenuUI : MonoBehaviour
                   "Configurações", 48f, cTitle, TextAlignmentOptions.Center);
         CreateTMP(settingsPanel.transform, "VolumeLabel", new Vector2(0f, 0.60f), new Vector2(1f, 0.68f),
                   "Volume da Música", 26f, cTitle, TextAlignmentOptions.Center);
-        CreateSlider(settingsPanel.transform, "VolumeSlider", 0.52f, AudioController.GetVolume(), AudioController.SetVolume);
-        CreateButton(settingsPanel.transform, "BackButton", "Voltar", 0.28f, OnBackClicked);
+        volumeSlider = CreateSlider(settingsPanel.transform, "VolumeSlider", 0.52f, AudioController.GetVolume(), AudioController.SetVolume);
+
+        CreateTMP(settingsPanel.transform, "SensitivityLabel", new Vector2(0f, 0.42f), new Vector2(1f, 0.50f),
+                  "Sensibilidade do Rato", 26f, cTitle, TextAlignmentOptions.Center);
+        sensitivitySlider = CreateSlider(settingsPanel.transform, "SensitivitySlider", 0.34f, PlayerController.GetSensitivity(), PlayerController.SetSensitivity, PlayerController.MinSensitivity, PlayerController.MaxSensitivity);
+
+        CreateButton(settingsPanel.transform, "BackButton", "Voltar", 0.16f, OnBackClicked);
 
         settingsPanel.SetActive(false);
         canvasObj.SetActive(false);
@@ -213,7 +236,7 @@ public class PauseMenuUI : MonoBehaviour
         return tmp;
     }
 
-    private Slider CreateSlider(Transform parent, string goName, float anchorY, float initialValue01, UnityEngine.Events.UnityAction<float> onValueChanged)
+    private Slider CreateSlider(Transform parent, string goName, float anchorY, float initialValue, UnityEngine.Events.UnityAction<float> onValueChanged, float minValue = 0f, float maxValue = 1f)
     {
         GameObject go = new GameObject(goName);
         go.transform.SetParent(parent, false);
@@ -265,12 +288,12 @@ public class PauseMenuUI : MonoBehaviour
 
         Slider slider = go.AddComponent<Slider>();
         slider.direction = Slider.Direction.LeftToRight;
-        slider.minValue = 0f;
-        slider.maxValue = 1f;
+        slider.minValue = minValue;
+        slider.maxValue = maxValue;
         slider.fillRect = fillRt;
         slider.handleRect = handleRt;
         slider.targetGraphic = handleImg;
-        slider.value = initialValue01;
+        slider.value = initialValue;
         slider.onValueChanged.AddListener(onValueChanged);
 
         return slider;
@@ -284,6 +307,9 @@ public class PauseMenuUI : MonoBehaviour
     {
         pausePanel.SetActive(false);
         settingsPanel.SetActive(true);
+
+        volumeSlider.SetValueWithoutNotify(AudioController.GetVolume());
+        sensitivitySlider.SetValueWithoutNotify(PlayerController.GetSensitivity());
     }
 
     private void OnBackClicked()

@@ -12,7 +12,7 @@ public class AxeTool : MonoBehaviour
     [SerializeField] private string mobTag = "Mob";
     [SerializeField] private string animalTag = "Animal";
     [SerializeField] private LayerMask raycastMask = ~0;
-    [SerializeField] private bool debugLogs = true;
+    [SerializeField] private bool debugLogs = false;
     [SerializeField] private bool startActiveForTesting = false;
     [SerializeField] private KeyCode destroyKey = KeyCode.B;
 
@@ -27,6 +27,7 @@ public class AxeTool : MonoBehaviour
     private bool mobTagValid = false;
     private bool animalTagValid = false;
     private BuildingManager buildingManager;
+    private float nextManagerSearch = 0f;
 
     private GameObject lastHighlighted;
     private Material[] savedMaterials;
@@ -45,26 +46,23 @@ public class AxeTool : MonoBehaviour
             Debug.Log($"[AxeTool] Start. Tags: {buildablesTag}={buildablesTagValid}, {treeTag}={treeTagValid}, {mobTag}={mobTagValid}");
     }
 
-    private bool IsEquippedItemBlocked()
-    {
-        if (InventorySystem.Instance == null) return false;
-        var stack = InventorySystem.Instance.hotbar[InventoryUI.SelectedHotbarSlot];
-        string item = stack != null ? stack.itemName : "";
-        return item == "Picareta" || item == "Floor" || item == "Wall";
-    }
-
     private void Update()
     {
         if (cam == null) cam = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
-        if (buildingManager == null) buildingManager = FindAnyObjectByType<BuildingManager>();
+        // Procurar o BuildingManager é uma varredura à cena — não o faças todos os frames.
+        if (buildingManager == null && Time.time >= nextManagerSearch)
+        {
+            nextManagerSearch = Time.time + 2f;
+            buildingManager = FindAnyObjectByType<BuildingManager>();
+        }
 
-        if (IsEquippedItemBlocked())
+        if (buildingManager != null && buildingManager.IsBuildModeActive())
         {
             ClearHighlight();
             return;
         }
 
-        if (buildingManager != null && buildingManager.IsBuildModeActive())
+        if (!IsAxeEquipped())
         {
             ClearHighlight();
             return;
@@ -101,6 +99,13 @@ public class AxeTool : MonoBehaviour
     }
 
     public void SetAxeActive(bool active) { } // mantido por compatibilidade — activação gerida internamente
+
+    private bool IsAxeEquipped()
+    {
+        if (InventorySystem.Instance == null) return false;
+        var stack = InventorySystem.Instance.hotbar[InventoryUI.SelectedHotbarSlot];
+        return stack != null && stack.itemName == "Machado";
+    }
 
     private void TryHit(GameObject target)
     {

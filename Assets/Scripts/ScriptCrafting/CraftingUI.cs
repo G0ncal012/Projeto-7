@@ -53,12 +53,14 @@ public class CraftingUI : MonoBehaviour
         craftPanel = new GameObject("CraftPanel");
         craftPanel.transform.SetParent(canvas.transform, false);
 
+        // Painel à direita do inventário (que ocupa ~413px ao centro, de -206 a +206),
+        // sem sobrepor. Pivot à esquerda para encostar à borda direita do inventário.
         RectTransform rt = craftPanel.AddComponent<RectTransform>();
         rt.anchorMin = new Vector2(0.5f, 0.5f);
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot = new Vector2(0f, 0.5f);
-        rt.sizeDelta = new Vector2(180f, 400f);
-        rt.anchoredPosition = new Vector2(270f, 0f);
+        rt.sizeDelta = new Vector2(300f, 460f);
+        rt.anchoredPosition = new Vector2(220f, 0f);
         craftPanel.AddComponent<Image>().color = cBg;
 
         // Título
@@ -68,22 +70,41 @@ public class CraftingUI : MonoBehaviour
         trt.anchorMin = new Vector2(0f, 1f);
         trt.anchorMax = new Vector2(1f, 1f);
         trt.pivot = new Vector2(0.5f, 1f);
-        trt.sizeDelta = new Vector2(0f, 30f);
+        trt.sizeDelta = new Vector2(0f, 34f);
         trt.anchoredPosition = new Vector2(0f, -8f);
         TextMeshProUGUI titleTmp = title.AddComponent<TextMeshProUGUI>();
-        titleTmp.text = "Craft"; titleTmp.fontSize = 14f;
+        titleTmp.text = "Craft"; titleTmp.fontSize = 18f;
         titleTmp.color = Color.white;
         titleTmp.alignment = TextAlignmentOptions.Center;
 
-        // Container de receitas
+        // Viewport com recorte (mask) — área visível por onde as receitas fazem scroll.
+        GameObject viewport = new GameObject("Viewport");
+        viewport.transform.SetParent(craftPanel.transform, false);
+        RectTransform vrt = viewport.AddComponent<RectTransform>();
+        vrt.anchorMin = new Vector2(0f, 0f);
+        vrt.anchorMax = new Vector2(1f, 1f);
+        vrt.offsetMin = new Vector2(8f, 8f);
+        vrt.offsetMax = new Vector2(-8f, -46f);
+        viewport.AddComponent<Image>().color = Color.clear;
+        viewport.AddComponent<RectMask2D>();
+
+        ScrollRect scroll = viewport.AddComponent<ScrollRect>();
+        scroll.horizontal = false;
+        scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 20f;
+        scroll.viewport = vrt;
+
+        // Content — empilha as receitas; altura definida em BuildRecipes.
         recipeContainer = new GameObject("Recipes");
-        recipeContainer.transform.SetParent(craftPanel.transform, false);
+        recipeContainer.transform.SetParent(viewport.transform, false);
         RectTransform rct = recipeContainer.AddComponent<RectTransform>();
-        rct.anchorMin = new Vector2(0f, 0f);
+        rct.anchorMin = new Vector2(0f, 1f);
         rct.anchorMax = new Vector2(1f, 1f);
-        rct.offsetMin = new Vector2(8f, 8f);
-        rct.offsetMax = new Vector2(-8f, -46f);
-        recipeContainer.AddComponent<Image>().color = Color.clear;
+        rct.pivot = new Vector2(0.5f, 1f);
+        rct.anchoredPosition = Vector2.zero;
+        rct.sizeDelta = new Vector2(0f, 0f);
+        scroll.content = rct;
 
         BuildRecipes();
 
@@ -95,8 +116,12 @@ public class CraftingUI : MonoBehaviour
         if (CraftingSystem.Instance?.recipes == null) return;
 
         var list = CraftingSystem.Instance.recipes.recipes;
-        float cardH = 85f;
+        float cardH = 80f;
         float gap = 8f;
+
+        // Altura total do conteúdo para o ScrollRect poder percorrer todas as receitas.
+        RectTransform contentRt = recipeContainer.GetComponent<RectTransform>();
+        contentRt.sizeDelta = new Vector2(0f, list.Count * (cardH + gap) + gap);
 
         for (int i = 0; i < list.Count; i++)
         {
@@ -110,7 +135,7 @@ public class CraftingUI : MonoBehaviour
             crt.anchorMax = new Vector2(1f, 1f);
             crt.pivot = new Vector2(0.5f, 1f);
             crt.sizeDelta = new Vector2(0f, cardH);
-            crt.anchoredPosition = new Vector2(0f, -(i * (cardH + gap)));
+            crt.anchoredPosition = new Vector2(0f, -(gap + i * (cardH + gap)));
             card.AddComponent<Image>().color = cRecipe;
 
             // Nome
